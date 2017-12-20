@@ -23,14 +23,21 @@ import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.fragments.RecentFragment;
 import com.example.jayanth.musicplayer.helper.RedirectLocation;
 import com.example.jayanth.musicplayer.models.Song;
+import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
@@ -99,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
     }
 
+
+
+
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFrag(new AllSongsFragment(), "All Songs");
@@ -107,22 +117,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         adapter.addFrag(new RecentFragment(), "Recent");
         viewPager.setAdapter(adapter);
     }
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        if (Util.SDK_INT > 23) {
-//            initializePlayer("we");
-//        }
-//    }
-//
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-////        hideSystemUi();
-//        if ((Util.SDK_INT <= 23 || player == null)) {
-//            initializePlayer("w");
-//        }
-//    }
 
     @Override
     public void onClick(Song song) {
@@ -133,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         Toast.makeText(this, "new", Toast.LENGTH_SHORT).show();
         Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
         songName.setText(song.getSong());
+        NotificationUtil.notifyUser(this,song);
     }
 
 
@@ -148,6 +143,49 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             player.setPlayWhenReady(playWhenReady);
             player.seekTo(currentWindow, playbackPosition);
         }
+        player.addListener(new ExoPlayer.EventListener() {
+            @Override
+            public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+            }
+
+            @Override
+            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray
+                    trackSelections) {
+
+            }
+
+            @Override
+            public void onLoadingChanged(boolean isLoading) {
+
+            }
+
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                if(playWhenReady){
+                    setPauseButton();
+                }
+                else{
+                    setPlayButton();
+                }
+            }
+
+            @Override
+            public void onPlayerError(ExoPlaybackException error) {
+
+            }
+
+            @Override
+            public void onPositionDiscontinuity() {
+
+            }
+
+            @Override
+            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+            }
+        });
+
         String finalUrl;
         try {
             finalUrl = new RedirectLocation().execute(url).get();
@@ -161,41 +199,42 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         }
     }
 
-//    @Override
-//    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-//        if(playbackState == ExoPlayer.STATE_ENDED){
-//
-//        }
-//    }
 
     private MediaSource buildMediaSource(Uri uri) {
         return new ExtractorMediaSource(uri,
                 new DefaultHttpDataSourceFactory("exoplayer-codelab"),
                 new DefaultExtractorsFactory(), null, null);
     }
+//
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        if (Util.SDK_INT <= 23) {
+////            releasePlayer();
+//        }
+//    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+////        hideSystemUi();
+//        if ((Util.SDK_INT <= 23 || player == null)&&(toResume!=null)) {
+////            initializePlayer(toResume);
+//        }
+//    }
+//
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        if (Util.SDK_INT > 23) {
+////            releasePlayer();
+//        }
+//    }
+
 
     @Override
-    public void onPause() {
-        super.onPause();
-        if (Util.SDK_INT <= 23) {
-//            releasePlayer();
-        }
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-//        hideSystemUi();
-        if ((Util.SDK_INT <= 23 || player == null)&&(toResume!=null)) {
-//            initializePlayer(toResume);
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (Util.SDK_INT > 23) {
-//            releasePlayer();
-        }
+    protected void onDestroy() {
+        super.onDestroy();
+        releasePlayer();
     }
 
     private void releasePlayer() {
@@ -216,17 +255,16 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     public void changeIcon() {
         if (playWhenReady) {
             playWhenReady = false;
-            player.setPlayWhenReady(playWhenReady);
+            player.setPlayWhenReady(false);
             setPlayButton();
         } else {
             playWhenReady = true;
-            player.setPlayWhenReady(playWhenReady);
+            player.setPlayWhenReady(true);
             setPauseButton();
         }
 
     }
     public void setPauseButton(){
-//        imageButton.setImageResource(R);
         imageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
                 .pause_button_svg));
     }
