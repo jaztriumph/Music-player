@@ -1,5 +1,7 @@
 package com.example.jayanth.musicplayer.activities;
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -8,9 +10,12 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,13 +45,12 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.squareup.picasso.Picasso;
 
 import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity implements SlidePanelCommunicator{
+public class MainActivity extends AppCompatActivity implements SlidePanelCommunicator {
 
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -59,13 +63,17 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private ImageButton imageButton;
     private int currentWindow;
     private boolean playWhenReady = true;
-    private String toResume=null;
+//    private String toResume = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         setContentView(R.layout.activity_main);
+
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService
+                (Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -103,10 +111,9 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
             }
         });
-
+//        if(toResume!=null)
+//        initializePlayer(toResume);
     }
-
-
 
 
     private void setupViewPager(ViewPager viewPager) {
@@ -121,18 +128,31 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     @Override
     public void onClick(Song song) {
         playWhenReady = true;
+        if(player!=null)
+            player.setPlayWhenReady(true);
         setPauseButton();
-        toResume=song.getUrl();
+//        toResume = song.getUrl();
         initializePlayer(song.getUrl());
         Toast.makeText(this, "new", Toast.LENGTH_SHORT).show();
         Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
         songName.setText(song.getSong());
-        NotificationUtil.notifyUser(this,song);
+        NotificationUtil.notifyUser(this, song);
     }
 
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+//        Toast.makeText(this, "backPressed", Toast.LENGTH_SHORT).show();
+        moveTaskToBack(true);
+    }
 
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        return true;
+//    }
 
     private void initializePlayer(String url) {
+//        toResume = url;
         if (player == null) {
             player = ExoPlayerFactory.newSimpleInstance(
                     new DefaultRenderersFactory(this),
@@ -162,10 +182,9 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                if(playWhenReady){
+                if (playWhenReady) {
                     setPauseButton();
-                }
-                else{
+                } else {
                     setPlayButton();
                 }
             }
@@ -231,11 +250,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 //    }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        releasePlayer();
-    }
 
     private void releasePlayer() {
         if (player != null) {
@@ -248,8 +262,8 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     }
 
     public void onClickPlay(View view) {
-        if(player!=null)
-        changeIcon();
+        if (player != null)
+            changeIcon();
     }
 
     public void changeIcon() {
@@ -264,12 +278,13 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         }
 
     }
-    public void setPauseButton(){
+
+    public void setPauseButton() {
         imageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
                 .pause_button_svg));
     }
 
-    public void setPlayButton(){
+    public void setPlayButton() {
         imageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
                 .play_button_svg));
     }

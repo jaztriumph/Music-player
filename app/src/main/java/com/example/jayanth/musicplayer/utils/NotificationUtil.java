@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.widget.RemoteViews;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
@@ -29,7 +30,7 @@ public class NotificationUtil {
 
     private static final String NOTIFY_USER_CHANNEL_ID = "user_notify_channel";
 
-    public static void notifyUser(Context context,Song song) {
+    public static void notifyUser(Context context, Song song) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService
                 (Context.NOTIFICATION_SERVICE);
 
@@ -51,8 +52,9 @@ public class NotificationUtil {
                 .setContentTitle(song.getSong())
                 .setContentText(song.getArtists())
                 .setContentIntent(pendingIntent(context))
-                .setAutoCancel(false);
-
+                .addAction()
+                .setAutoCancel(false)
+                .setOngoing(true);
         //setting priority high for android versions less than jellybean
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -60,9 +62,15 @@ public class NotificationUtil {
         }
 
         if (notificationManager != null) {
-            notificationManager.notify(NOTIFY_USER_ID, notificationBuilder.build());
-        }
+            final Notification notification = notificationBuilder.build();
+            final RemoteViews contentView = notification.contentView;
+            final int iconId = android.R.id.icon;
+            Picasso.with(context).load(song.getCoverImage()).resize(150, 150).into
+                    (contentView, iconId, NOTIFY_USER_ID, notification);
+            notificationManager.notify(NOTIFY_USER_ID, notification);
 
+
+        }
     }
 
     //creates a pendingIntent
@@ -72,5 +80,8 @@ public class NotificationUtil {
                 startActivityIntent, PendingIntent
                         .FLAG_UPDATE_CURRENT
         );
+    }
+    private static NotificationCompat.Action playPause(Context context){
+        Intent pausePlay=new Intent(context,)
     }
 }
