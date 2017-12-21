@@ -93,7 +93,6 @@
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:paddingTop="10dp"
-            android:onClick="onClickPlay"
             android:maxWidth="20dp"
             android:maxHeight="20dp"
             android:src="@drawable/play_button_svg" />

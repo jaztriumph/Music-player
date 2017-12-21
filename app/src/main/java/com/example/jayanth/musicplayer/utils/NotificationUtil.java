@@ -14,6 +14,7 @@ import android.widget.RemoteViews;
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.models.Song;
+import com.example.jayanth.musicplayer.services.NotificationActionService;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -52,7 +53,7 @@ public class NotificationUtil {
                 .setContentTitle(song.getSong())
                 .setContentText(song.getArtists())
                 .setContentIntent(pendingIntent(context))
-                .addAction()
+                .addAction(playPause(context))
                 .setAutoCancel(false)
                 .setOngoing(true);
         //setting priority high for android versions less than jellybean
@@ -81,7 +82,14 @@ public class NotificationUtil {
                         .FLAG_UPDATE_CURRENT
         );
     }
-    private static NotificationCompat.Action playPause(Context context){
-        Intent pausePlay=new Intent(context,)
+
+    private static NotificationCompat.Action playPause(Context context) {
+        Intent pausePlayIntent = new Intent(context, NotificationActionService.class);
+        pausePlayIntent.setAction("first");
+        PendingIntent pausePlayPendingIntent = PendingIntent.getService(context, 100,
+                pausePlayIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
+                .pause_button_svg,"pause",pausePlayPendingIntent );
+        return pausePlayAction;
     }
 }
