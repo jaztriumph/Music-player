@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.widget.RemoteViews;
@@ -31,7 +32,12 @@ public class NotificationUtil {
 
     private static final String NOTIFY_USER_CHANNEL_ID = "user_notify_channel";
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public static void notifyUser(Context context, Song song) {
+        RemoteViews bigNotificationView = new RemoteViews(context.getPackageName(),
+                R.layout.expand_custom_notification);
+        RemoteViews smallNotificationView = new RemoteViews(context.getPackageName(),
+                R.layout.small_custom_notification);
         NotificationManager notificationManager = (NotificationManager) context.getSystemService
                 (Context.NOTIFICATION_SERVICE);
 
@@ -50,10 +56,9 @@ public class NotificationUtil {
                 NOTIFY_USER_CHANNEL_ID)
                 .setColor(ContextCompat.getColor(context, R.color.colorAccent))
                 .setSmallIcon(R.drawable.music_player_svg)
-                .setContentTitle(song.getSong())
-                .setContentText(song.getArtists())
+                .setContent(smallNotificationView)
                 .setContentIntent(pendingIntent(context))
-                .addAction(playPause(context))
+
                 .setAutoCancel(false)
                 .setOngoing(true);
         //setting priority high for android versions less than jellybean
@@ -68,6 +73,7 @@ public class NotificationUtil {
             final int iconId = android.R.id.icon;
             Picasso.with(context).load(song.getCoverImage()).resize(150, 150).into
                     (contentView, iconId, NOTIFY_USER_ID, notification);
+            notification.bigContentView=bigNotificationView;
             notificationManager.notify(NOTIFY_USER_ID, notification);
 
 
@@ -89,7 +95,7 @@ public class NotificationUtil {
         PendingIntent pausePlayPendingIntent = PendingIntent.getService(context, 100,
                 pausePlayIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
-                .pause_button_svg,"pause",pausePlayPendingIntent );
+                .pause_button_svg,"",pausePlayPendingIntent );
         return pausePlayAction;
     }
 }

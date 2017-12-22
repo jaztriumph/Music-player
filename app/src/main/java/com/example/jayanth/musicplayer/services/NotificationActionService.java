@@ -4,15 +4,20 @@ import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.helper.RedirectLocation;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
@@ -32,6 +37,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.squareup.picasso.Picasso;
 
 import java.util.concurrent.ExecutionException;
 
@@ -48,7 +54,8 @@ public class NotificationActionService extends Service {
     private boolean playWhenReady = true;
     private View mView;
     private ImageButton imageButton;
-
+    private TextView songName;
+    private ImageView slideCoverImage;
 
     public class LocalBinder extends Binder {
         public NotificationActionService getService() {
@@ -80,9 +87,14 @@ public class NotificationActionService extends Service {
     }
 
 
+
     public void initializePlayer(Song song, View view) {
         mView = view;
         imageButton = view.findViewById(R.id.play_btn);
+        songName=view.findViewById(R.id.song_name);
+        slideCoverImage=view.findViewById(R.id.slide_cover);
+        songName.setText(song.getSong());
+        Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
         playWhenReady = true;
         if(player!=null)
             player.setPlayWhenReady(true);
@@ -158,7 +170,9 @@ public class NotificationActionService extends Service {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        NotificationUtil.notifyUser(this, song);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            NotificationUtil.notifyUser(this, song);
+        }
     }
 
 

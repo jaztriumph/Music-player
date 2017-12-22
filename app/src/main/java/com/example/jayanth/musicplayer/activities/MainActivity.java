@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        doUnbindService();
+        doUnbindService();
     }
 
 
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 //        Toast.makeText(this, "new", Toast.LENGTH_SHORT).show();
 //        Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
 //        songName.setText(song.getSong());
-//        NotificationUtil.notifyUser(this, song);
+//
     }
 
     @Override
