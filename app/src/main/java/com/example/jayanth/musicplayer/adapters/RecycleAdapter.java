@@ -2,7 +2,6 @@ package com.example.jayanth.musicplayer.adapters;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -41,21 +40,22 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.MyViewHo
     }
 
 
-    public RecycleAdapter(Context mContext, List<Song> songList,RecycleAdapterOnClickHandler
+    public RecycleAdapter(Context mContext, List<Song> songList, RecycleAdapterOnClickHandler
             mOnClickHandler) {
         this.mContext = mContext;
         this.songList = songList;
-        this.mOnClickHandler=mOnClickHandler;
+        this.mOnClickHandler = mOnClickHandler;
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public TextView title, artist;
-        public ImageView thumbnail, overflow;
+        private TextView title, artist;
+
+        private ImageView thumbnail, overflow;
         View view;
 
-        public MyViewHolder(View view) {
+        private MyViewHolder(View view) {
             super(view);
-            this.view=view;
+            this.view = view;
             title = view.findViewById(R.id.title);
             artist = view.findViewById(R.id.artist);
             thumbnail = view.findViewById(R.id.thumbnail);
@@ -65,7 +65,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.MyViewHo
         @Override
         public void onClick(View view) {
             Toast.makeText(mContext, "adapter", Toast.LENGTH_SHORT).show();
-            int adapterPosition =getAdapterPosition();
+            int adapterPosition = getAdapterPosition();
             mOnClickHandler.onClick(songList.get(adapterPosition));
 
         }
@@ -85,7 +85,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.MyViewHo
             @Override
             public void onClick(View view) {
 //                Toast.makeText(mContext, "adapter", Toast.LENGTH_SHORT).show();
-                int adapterPosition =position;
+                int adapterPosition = position;
                 mOnClickHandler.onClick(songList.get(adapterPosition));
             }
         });
@@ -115,12 +115,11 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.MyViewHo
         Picasso.with(mContext).load(song.getCoverImage()).into(holder.thumbnail);
 
 
-
-
 //        String finalUrl=null;
 //        try {
 //             finalUrl = new Connect().execute(song.getCoverImage()).get();
-//            Picasso.with(mContext).load(new Connect().execute(song.getCoverImage()).get()).into(holder
+//            Picasso.with(mContext).load(new Connect().execute(song.getCoverImage()).get()).into
+// (holder
 //                    .thumbnail);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();

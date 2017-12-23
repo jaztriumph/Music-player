@@ -2,27 +2,23 @@ package com.example.jayanth.musicplayer.activities;
 
 import android.app.NotificationManager;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.renderscript.ScriptGroup;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,13 +26,13 @@ import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.adapters.ViewPagerAdapter;
 import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
 import com.example.jayanth.musicplayer.fragments.AllSongsFragment;
-import com.example.jayanth.musicplayer.fragments.DownloadsFragment;
 import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.fragments.RecentFragment;
+import com.example.jayanth.musicplayer.fragments.SongsFragment;
 import com.example.jayanth.musicplayer.helper.RedirectLocation;
+import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
-import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -54,9 +50,9 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-import com.squareup.picasso.Picasso;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity implements SlidePanelCommunicator {
@@ -72,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private ImageButton imageButton;
     private int currentWindow;
     private boolean playWhenReady = true;
+    public static List<ListSong> totalSongList;
 //    private String toResume = null;
 
 
@@ -80,17 +77,14 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         setContentView(R.layout.activity_main);
+//        startService(new Intent(this,NotificationActionService.class));
 
-//        Intent intent=getIntent();
-//        String action=intent.getAction();
-//        if( player!=null)
-//        {
-//            player.setPlayWhenReady(false);
-//        }
+
         NotificationManager notificationManager = (NotificationManager) this.getSystemService
                 (Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
-
+        totalSongList = new ArrayList<>();
+        loadSongList();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         slideCoverImage = findViewById(R.id.slide_cover);
@@ -127,10 +121,40 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
             }
         });
+
+    }
+
+    private void loadSongList() {
+        ContentResolver musicResolver = getContentResolver();
+        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+        if (musicCursor != null && musicCursor.moveToFirst()) {
+            //get columns
+            int songNameColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.TITLE);
+            int idColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.ALBUM_ID);
+            int artistColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.ARTIST);
+//            int artColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.p);
+            //add songs to list
+            do {
+                long thisId = musicCursor.getLong(idColumn);
+                String thisSongName = musicCursor.getString(songNameColumn);
+                String thisArtist = musicCursor.getString(artistColumn);
+//                String art = musicCursor.getString(artColumn);
+                String art="";
+                totalSongList.add(new ListSong(thisSongName, thisArtist, art, thisId));
+            }
+            while (musicCursor.moveToNext());
+            musicCursor.close();
+        }
+
     }
 
     private NotificationActionService mBoundService;
     private boolean mIsBound;
+
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // This is called when the connection with the service has been
@@ -138,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             // interact with the service.  Because we have bound to a explicit
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
-            mBoundService = ((NotificationActionService.LocalBinder)service).getService();
+            mBoundService = ((NotificationActionService.LocalBinder) service).getService();
 
             // Tell the user about this for our demo.
 //            Toast.makeText(MainActivity.this,"started",
@@ -177,26 +201,23 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     @Override
     protected void onStart() {
         super.onStart();
+//        startService(new Intent(this,NotificationActionService.class));
+
         doBindService();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+//        Toast.makeText(this, "destroy", Toast.LENGTH_SHORT).show();
         doUnbindService();
     }
 
 
-
-
-
-
-
-
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new AllSongsFragment(), "All Songs");
-        adapter.addFrag(new DownloadsFragment(), "Downloads");
+        adapter.addFrag(new AllSongsFragment(), "stream Songs");
+        adapter.addFrag(new SongsFragment(), "Songs");
         adapter.addFrag(new PlaylistsFragment(), "Playlist");
         adapter.addFrag(new RecentFragment(), "Recent");
         viewPager.setAdapter(adapter);
@@ -204,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
     @Override
     public void onClick(Song song) {
-        mBoundService.initializePlayer(song,this.findViewById(android.R.id.content).getRootView());
+        mBoundService.initializePlayer(song, this.findViewById(android.R.id.content).getRootView());
 //        playWhenReady = true;
 //        if(player!=null)
 //            player.setPlayWhenReady(true);
@@ -326,7 +347,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 ////            releasePlayer();
 //        }
 //    }
-
 
 
     private void releasePlayer() {

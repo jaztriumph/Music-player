@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
         android:id="@+id/cover_image"
@@ -22,7 +23,7 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/imageButton1"
+            android:id="@+id/small_previous_btn"
             style="@style/DefaultButton"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -30,7 +31,7 @@
 
 
         <ImageButton
-            android:id="@+id/imageButton2"
+            android:id="@+id/small_play_pause_btn"
             style="@style/DefaultButton"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -43,7 +44,7 @@
 
 
         <ImageButton
-            android:id="@+id/imageButton3"
+            android:id="@+id/small_next_btn"
             style="@style/DefaultButton"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -51,6 +52,7 @@
             android:src="@drawable/next_svg" />
 
         <ImageButton
+            android:id="@+id/small_close_notification_btn"
             style="@style/DefaultButton"
             android:layout_width="30dp"
             android:layout_height="match_parent"

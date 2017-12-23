@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
@@ -32,13 +34,34 @@ public class NotificationUtil {
 
     private static final String NOTIFY_USER_CHANNEL_ID = "user_notify_channel";
 
+    public static RemoteViews bigNotificationView;
+    public static RemoteViews smallNotificationView;
+
+    public static NotificationManager notificationManager;
+
+    public static NotificationCompat.Builder notificationBuilder;
+    public static Notification notification;
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public static void notifyUser(Context context, Song song) {
-        RemoteViews bigNotificationView = new RemoteViews(context.getPackageName(),
+        bigNotificationView = new RemoteViews(context.getPackageName(),
                 R.layout.expand_custom_notification);
-        RemoteViews smallNotificationView = new RemoteViews(context.getPackageName(),
+        bigNotificationView.setOnClickPendingIntent(R.id.big_play_pause_btn, playPause(context));
+        bigNotificationView.setOnClickPendingIntent(R.id.big_close_notification_btn, close
+                (context));
+        bigNotificationView.setTextViewText(R.id.notification_title, song.getSong());
+        bigNotificationView.setTextViewText(R.id.notification_text, song.getArtists());
+//        bigNotificationView.setImageViewIcon();
+
+
+        smallNotificationView = new RemoteViews(context.getPackageName(),
                 R.layout.small_custom_notification);
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService
+        smallNotificationView.setOnClickPendingIntent(R.id.small_play_pause_btn, playPause
+                (context));
+        smallNotificationView.setOnClickPendingIntent(R.id.small_close_notification_btn, close
+                (context));
+
+        notificationManager = (NotificationManager) context.getSystemService
                 (Context.NOTIFICATION_SERVICE);
 
         //check for android version
@@ -52,15 +75,15 @@ public class NotificationUtil {
         }
 
         //creates notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context,
+        notificationBuilder = new NotificationCompat.Builder(context,
                 NOTIFY_USER_CHANNEL_ID)
                 .setColor(ContextCompat.getColor(context, R.color.colorAccent))
                 .setSmallIcon(R.drawable.music_player_svg)
                 .setContent(smallNotificationView)
                 .setContentIntent(pendingIntent(context))
-
                 .setAutoCancel(false)
                 .setOngoing(true);
+
         //setting priority high for android versions less than jellybean
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -68,12 +91,15 @@ public class NotificationUtil {
         }
 
         if (notificationManager != null) {
-            final Notification notification = notificationBuilder.build();
-            final RemoteViews contentView = notification.contentView;
-            final int iconId = android.R.id.icon;
-            Picasso.with(context).load(song.getCoverImage()).resize(150, 150).into
-                    (contentView, iconId, NOTIFY_USER_ID, notification);
-            notification.bigContentView=bigNotificationView;
+            notification = notificationBuilder.build();
+            Picasso.with(context).load(song.getCoverImage()).resize(200, 200).into
+                    (bigNotificationView, R.id
+                            .cover_image, NOTIFY_USER_ID, notification);
+//            final RemoteViews contentView = notification.contentView;
+//            final int iconId = android.R.id.icon;
+//            Picasso.with(context).load(song.getCoverImage()).resize(150, 150).into
+//                    (contentView, iconId, NOTIFY_USER_ID, notification);
+            notification.bigContentView = bigNotificationView;
             notificationManager.notify(NOTIFY_USER_ID, notification);
 
 
@@ -89,13 +115,26 @@ public class NotificationUtil {
         );
     }
 
-    private static NotificationCompat.Action playPause(Context context) {
-        Intent pausePlayIntent = new Intent(context, NotificationActionService.class);
-        pausePlayIntent.setAction("first");
-        PendingIntent pausePlayPendingIntent = PendingIntent.getService(context, 100,
-                pausePlayIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
-                .pause_button_svg,"",pausePlayPendingIntent );
-        return pausePlayAction;
+
+    private static PendingIntent playPause(Context context) {
+
+        Intent playPauseIntent = new Intent(context, NotificationActionService.class);
+        playPauseIntent.setAction("playPause");
+        PendingIntent playPausePendingIntent = PendingIntent.getService(context, 100,
+                playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
+//                .pause_button_svg,"",pausePlayPendingIntent );
+        return playPausePendingIntent;
+    }
+
+    private static PendingIntent close(Context context) {
+
+        Intent playPauseIntent = new Intent(context, NotificationActionService.class);
+        playPauseIntent.setAction("close");
+        PendingIntent playPausePendingIntent = PendingIntent.getService(context, 100,
+                playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
+//                .pause_button_svg,"",pausePlayPendingIntent );
+        return playPausePendingIntent;
     }
 }

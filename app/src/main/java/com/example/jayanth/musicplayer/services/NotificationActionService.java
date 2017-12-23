@@ -1,5 +1,6 @@
 package com.example.jayanth.musicplayer.services;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
@@ -7,7 +8,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
@@ -17,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
-import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.helper.RedirectLocation;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
@@ -41,6 +40,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.concurrent.ExecutionException;
 
+import static com.example.jayanth.musicplayer.utils.NotificationUtil.bigNotificationView;
+import static com.example.jayanth.musicplayer.utils.NotificationUtil.notification;
+import static com.example.jayanth.musicplayer.utils.NotificationUtil.notificationBuilder;
+import static com.example.jayanth.musicplayer.utils.NotificationUtil.notificationManager;
+import static com.example.jayanth.musicplayer.utils.NotificationUtil.smallNotificationView;
+
 /**
  * Created by jayanth on 21/12/17.
  */
@@ -56,12 +61,15 @@ public class NotificationActionService extends Service {
     private ImageButton imageButton;
     private TextView songName;
     private ImageView slideCoverImage;
+    private Song currentSong;
 
     public class LocalBinder extends Binder {
         public NotificationActionService getService() {
             return NotificationActionService.this;
         }
     }
+    private final IBinder mBinder = new LocalBinder();
+    private NotificationManager mNM;
 
     @Nullable
     @Override
@@ -71,32 +79,37 @@ public class NotificationActionService extends Service {
 
     @Override
     public void onCreate() {
+        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNM.cancelAll();
 
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action=intent.getAction();
-        if(action!=null && player!=null && action.equals("first")){
-            changeIcon();
+        String action = intent.getAction();
+        if (action != null && player != null) {
+            if (action.equals("playPause"))
+                changeIcon();
+            if (action.equals("close"))
+                notificationManager.cancelAll();
         }
-        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
 
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
         return START_NOT_STICKY;
     }
 
 
-
     public void initializePlayer(Song song, View view) {
+        currentSong = song;
         mView = view;
         imageButton = view.findViewById(R.id.play_btn);
-        songName=view.findViewById(R.id.song_name);
-        slideCoverImage=view.findViewById(R.id.slide_cover);
+        songName = view.findViewById(R.id.song_name);
+        slideCoverImage = view.findViewById(R.id.slide_cover);
         songName.setText(song.getSong());
         Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
         playWhenReady = true;
-        if(player!=null)
+        if (player != null)
             player.setPlayWhenReady(true);
         setPauseButton();
         imageButton.setOnClickListener(new View.OnClickListener() {
@@ -187,10 +200,29 @@ public class NotificationActionService extends Service {
             playWhenReady = false;
             player.setPlayWhenReady(false);
             setPlayButton();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+                        .play_button_notification_svg);
+                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+                        .play_button_notification_svg);
+                notificationBuilder.setContent(smallNotificationView);
+                notification.bigContentView = bigNotificationView;
+                notificationManager.notify(987, notification);
+            }
+
         } else {
             playWhenReady = true;
             player.setPlayWhenReady(true);
             setPauseButton();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+                        .pause_button_notification_svg);
+                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+                        .pause_button_notification_svg);
+                notificationBuilder.setContent(smallNotificationView);
+                notification.bigContentView = bigNotificationView;
+                notificationManager.notify(987, notification);
+            }
         }
 
     }
@@ -208,22 +240,50 @@ public class NotificationActionService extends Service {
 
     public void setPauseButton() {
 
-        imageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
-                .pause_button_svg));
+        imageButton.setImageResource(R.drawable
+                .pause_button_svg);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+                        .pause_button_notification_svg);
+                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+                        .pause_button_notification_svg);
+                notificationBuilder.setContent(smallNotificationView);
+                notification.bigContentView = bigNotificationView;
+                notificationManager.notify(987, notification);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public void setPlayButton() {
-        imageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
-                .play_button_svg));
+        imageButton.setImageResource(R.drawable.play_button_svg);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+                        .play_button_notification_svg);
+                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+                        .play_button_notification_svg);
+                notificationBuilder.setContent(smallNotificationView);
+                notification.bigContentView = bigNotificationView;
+                notificationManager.notify(987, notification);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     @Override
     public void onDestroy() {
         // Tell the user we stopped.
+        stopSelf();
         Toast.makeText(this, "stopped", Toast.LENGTH_SHORT).show();
 
     }
 
 
-    private final IBinder mBinder = new LocalBinder();
+
 }
