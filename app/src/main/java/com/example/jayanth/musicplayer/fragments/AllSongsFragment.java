@@ -34,7 +34,7 @@ public class AllSongsFragment extends Fragment implements RecycleAdapter
     private RecycleAdapter adapter;
     private List<Song> songList;
     private ApiInterface apiInterface;
-    SlidePanelCommunicator comm;
+    private SlidePanelCommunicator comm;
 
     public AllSongsFragment() {
         // Required empty public constructor

@@ -6,16 +6,16 @@
     android:viewportHeight="60">
 
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#df4545"
         android:pathData="M 5 10 H 8 V 50 H 5 V 10 Z" />
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#df4545"
         android:pathData="M 52 10 H 55 V 50 H 52 V 10 Z" />
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#df4545"
         android:pathData="M 57 14 H 60 V 46 H 57 V 14 Z" />
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#df4545"
         android:pathData="M 0 14 H 3 V 46 H 0 V 14 Z" />
     <path
         android:fillColor="#df4545"

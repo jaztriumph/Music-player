@@ -2,13 +2,13 @@ package com.example.jayanth.musicplayer.services;
 
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.helper.RedirectLocation;
+import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -29,13 +30,17 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.squareup.picasso.Picasso;
 
 import java.util.concurrent.ExecutionException;
@@ -62,12 +67,14 @@ public class NotificationActionService extends Service {
     private TextView songName;
     private ImageView slideCoverImage;
     private Song currentSong;
+    private SimpleExoPlayer mExoPlayer;
 
     public class LocalBinder extends Binder {
         public NotificationActionService getService() {
             return NotificationActionService.this;
         }
     }
+
     private final IBinder mBinder = new LocalBinder();
     private NotificationManager mNM;
 
@@ -100,7 +107,61 @@ public class NotificationActionService extends Service {
     }
 
 
+    public void initializePlayer(ListSong song, View view) {
+
+        playWhenReady = true;
+        if (player != null)
+            player.setPlayWhenReady(true);
+        if (player == null) {
+            player = ExoPlayerFactory.newSimpleInstance(
+                    new DefaultRenderersFactory(this),
+                    new DefaultTrackSelector(), new DefaultLoadControl());
+
+
+            playerView = view.findViewById(R.id.player_background_view);
+            playerView.setPlayer(player);
+            player.setPlayWhenReady(playWhenReady);
+            player.seekTo(currentWindow, playbackPosition);
+        }
+        String finalUrl;
+        finalUrl = "file:///" + song.getArt();
+        Uri uri = Uri.parse(finalUrl);
+        DataSource.Factory dataSourceFactory =
+                new DefaultDataSourceFactory(
+                        this, Util.getUserAgent(this, "Music Player"), null);
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+        MediaSource mediaSource =
+                new ExtractorMediaSource(
+                        uri, dataSourceFactory, extractorsFactory, null, null);
+        player.prepare(mediaSource, true, true);
+
+
+    }
+
+
     public void initializePlayer(Song song, View view) {
+//        String source = "file:///storage/sdcard0/Sounds/Music/02---Yo-Yo-Honey-Singh---Angreji" +
+//                "-Beat-Ft.-Gippy.mp3";
+//        Context mContext = getApplicationContext();
+//        if (mExoPlayer == null) {
+//            mExoPlayer =
+//                    ExoPlayerFactory.newSimpleInstance(
+//                            new DefaultRenderersFactory(this), new DefaultTrackSelector(), new
+//                                    DefaultLoadControl());
+//        }
+//        mExoPlayer.setPlayWhenReady(true);
+//        DataSource.Factory dataSourceFactory =
+//                new DefaultDataSourceFactory(
+//                        mContext, Util.getUserAgent(mContext, "Music Player"), null);
+//        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+//        // The MediaSource represents the media to be played.
+//        MediaSource mediaSource =
+//                new ExtractorMediaSource(
+//                        Uri.parse(source), dataSourceFactory, extractorsFactory, null, null);
+//        mExoPlayer.prepare(mediaSource, true, true);
+
+
+
         currentSong = song;
         mView = view;
         imageButton = view.findViewById(R.id.play_btn);
@@ -130,6 +191,7 @@ public class NotificationActionService extends Service {
             player.setPlayWhenReady(playWhenReady);
             player.seekTo(currentWindow, playbackPosition);
         }
+
         player.addListener(new ExoPlayer.EventListener() {
             @Override
             public void onTimelineChanged(Timeline timeline, Object manifest) {
@@ -158,7 +220,10 @@ public class NotificationActionService extends Service {
 
             @Override
             public void onPlayerError(ExoPlaybackException error) {
-
+                Toast.makeText(NotificationActionService.this, error.toString(), Toast
+ .LENGTH_SHORT)
+                        .show();
+                Log.i("error", error.toString());
             }
 
             @Override
@@ -190,6 +255,7 @@ public class NotificationActionService extends Service {
 
 
     private MediaSource buildMediaSource(Uri uri) {
+
         return new ExtractorMediaSource(uri,
                 new DefaultHttpDataSourceFactory("exoplayer-codelab"),
                 new DefaultExtractorsFactory(), null, null);
@@ -283,7 +349,6 @@ public class NotificationActionService extends Service {
         Toast.makeText(this, "stopped", Toast.LENGTH_SHORT).show();
 
     }
-
 
 
 }

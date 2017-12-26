@@ -1,5 +1,6 @@
 package com.example.jayanth.musicplayer.communicator;
 
+import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
 
 /**
@@ -8,4 +9,5 @@ import com.example.jayanth.musicplayer.models.Song;
 
 public interface SlidePanelCommunicator {
     public void onClick(Song song);
+    public void onClick(ListSong song);
 }

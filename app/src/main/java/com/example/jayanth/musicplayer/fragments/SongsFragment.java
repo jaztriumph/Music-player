@@ -9,13 +9,16 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
+import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
 
@@ -28,7 +31,7 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter.ListRe
     private RecyclerView recyclerView;
     private ListRecycleAdapter recycleAdapter;
     private List<ListSong> songList;
-
+    private SlidePanelCommunicator comm;
 
     public SongsFragment() {
         // Required empty public constructor
@@ -52,6 +55,7 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter.ListRe
         super.onAttach(context);
         songList=new ArrayList<>();
         songList= MainActivity.totalSongList;
+        comm = (SlidePanelCommunicator) context;
     }
 
     @Override
@@ -73,7 +77,9 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter.ListRe
 
 
     @Override
-    public void onClick(Song song) {
-
+    public void onClick(ListSong song) {
+        comm.onClick(song);
+        Log.i("song path",song.getArt());
+        Toast.makeText(getContext(), song.getArt(), Toast.LENGTH_SHORT).show();
     }
 }

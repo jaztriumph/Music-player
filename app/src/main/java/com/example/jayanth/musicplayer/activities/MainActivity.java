@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -80,9 +81,9 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 //        startService(new Intent(this,NotificationActionService.class));
 
 
-        NotificationManager notificationManager = (NotificationManager) this.getSystemService
-                (Context.NOTIFICATION_SERVICE);
-        notificationManager.cancelAll();
+//        NotificationManager notificationManager = (NotificationManager) this.getSystemService
+//                (Context.NOTIFICATION_SERVICE);
+//        notificationManager.cancelAll();
         totalSongList = new ArrayList<>();
         loadSongList();
         toolbar = findViewById(R.id.toolbar);
@@ -136,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                     (android.provider.MediaStore.Audio.Media.ALBUM_ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
+            int dataColumn=musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.DATA);
 //            int artColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.p);
             //add songs to list
             do {
@@ -144,7 +147,8 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                 String thisArtist = musicCursor.getString(artistColumn);
 //                String art = musicCursor.getString(artColumn);
                 String art="";
-                totalSongList.add(new ListSong(thisSongName, thisArtist, art, thisId));
+                String data=musicCursor.getString(dataColumn);
+                totalSongList.add(new ListSong(thisSongName, thisArtist, data, thisId));
             }
             while (musicCursor.moveToNext());
             musicCursor.close();
@@ -236,6 +240,11 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 //        Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
 //        songName.setText(song.getSong());
 //
+    }
+
+    @Override
+    public void onClick(ListSong song) {
+        mBoundService.initializePlayer(song, this.findViewById(android.R.id.content).getRootView());
     }
 
     @Override

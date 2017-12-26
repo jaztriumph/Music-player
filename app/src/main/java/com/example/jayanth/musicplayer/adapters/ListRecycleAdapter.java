@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.io.FileDescriptor;
@@ -34,7 +36,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     final private ListRecycleAdapter.ListRecycleAdapterOnClickHandler mOnClickHandler;
 
     public interface ListRecycleAdapterOnClickHandler {
-        void onClick(Song song);
+        void onClick(ListSong song);
     }
 
 
@@ -54,8 +56,14 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        ListSong song = songList.get(position);
+    public void onBindViewHolder(final MyViewHolder holder, int position) {
+        final ListSong song = songList.get(position);
+        holder.view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mOnClickHandler.onClick(song);
+            }
+        });
         holder.listArtist.setText(song.getArtist());
         holder.listSong.setText(song.getSongName());
 //        Bitmap bm = BitmapFactory.decodeFile(song.getArt());
@@ -65,7 +73,21 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         Uri uri = ContentUris.withAppendedId(sArtworkUri,
                 song.getId());
 //        if(isImageFile(uri.toString()))
-        Picasso.with(mContext).load(uri).into(holder.listSideImage);
+        Picasso.with(mContext).load(uri).resize(1000, 1000).centerCrop().into(holder
+                        .listSideImage,
+                new Callback(){
+            @Override
+            public void onSuccess() {
+
+
+            }
+
+            @Override
+            public void onError() {
+
+                Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder.listSideImage);
+            }
+        });
 //        holder.listSideImage.setImageBitmap(getAlbumart(song.getId()));
 
 
