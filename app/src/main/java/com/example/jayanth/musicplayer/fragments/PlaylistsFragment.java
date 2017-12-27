@@ -4,16 +4,20 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.activities.MainActivity;
+import com.example.jayanth.musicplayer.adapters.PlaylistRecycleAdapter;
 
 public class PlaylistsFragment extends Fragment {
 
-    TextView playlistsText;
+    RecyclerView recyclerView;
+    PlaylistRecycleAdapter adapter;
 
     public PlaylistsFragment() {
         // Required empty public constructor
@@ -41,7 +45,10 @@ public class PlaylistsFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        playlistsText = getView().findViewById(R.id.playlist);
-
+        recyclerView = getView().findViewById(R.id.playlist_recycler_view);
+        adapter = new PlaylistRecycleAdapter(getContext(), MainActivity.allPlaylists);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(adapter);
     }
 }

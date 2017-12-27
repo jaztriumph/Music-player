@@ -1,46 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/tools"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
-    >
+    android:layout_height="wrap_content"
+    android:padding="3dp">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <ImageView
+        android:id="@+id/list_side_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerVertical="true"
+        android:src="@drawable/music_player_svg" />
 
-        <ImageView
-            android:id="@+id/list_side_image"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/music_player_svg" />
+    <TextView
+        android:id="@+id/list_song_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@+id/list_side_image"
+        android:layout_toLeftOf="@id/song_list_overflow"
+        android:layout_toRightOf="@+id/list_side_image"
+        android:layout_toStartOf="@id/song_list_overflow"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:padding="3dp"
+        android:textColor="#383636"
+        android:textSize="14sp"
+        tools:text="song Name" />
 
-        <TextView
-            android:id="@+id/list_song_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginStart="10dp"
-            android:layout_toEndOf="@+id/list_side_image"
-            android:layout_toRightOf="@+id/list_side_image"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:padding="5dp"
-            android:text="song Name" />
+    <TextView
+        android:id="@+id/list_artist_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/list_song_name"
+        android:layout_alignStart="@+id/list_song_name"
+        android:layout_below="@+id/list_song_name"
+        android:layout_toLeftOf="@id/song_list_overflow"
+        android:layout_toStartOf="@id/song_list_overflow"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:padding="3dp"
+        android:textSize="12sp"
+        tools:text="Artist Name" />
 
-        <TextView
-            android:id="@+id/list_artist_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/list_song_name"
-            android:layout_alignStart="@+id/list_song_name"
-            android:layout_below="@+id/list_song_name"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:padding="5dp"
-            android:text="Artist Name" />
-    </RelativeLayout>
+    <ImageButton
+        android:id="@+id/song_list_overflow"
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@+id/list_artist_name"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="@color/windowBackground"
+        android:src="@drawable/ic_dots" />
 
-</android.support.v7.widget.CardView>
+</RelativeLayout>
+
+

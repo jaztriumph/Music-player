@@ -1,16 +1,17 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorAccent"
-    tools:context="com.example.jayanth.musicplayer.fragments.PlaylistsFragment">
+    tools:showIn="@layout/activity_main">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:id="@+id/playlist"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/playlist_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:text="first"
-        />
+        android:layout_height="wrap_content"
+        android:background="@color/windowBackground"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
 
-</FrameLayout>
+</RelativeLayout>

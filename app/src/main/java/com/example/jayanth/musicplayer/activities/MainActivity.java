@@ -16,7 +16,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -30,7 +29,9 @@ import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.fragments.RecentFragment;
 import com.example.jayanth.musicplayer.fragments.SongsFragment;
 import com.example.jayanth.musicplayer.helper.RedirectLocation;
+import com.example.jayanth.musicplayer.models.AllPlaylists;
 import com.example.jayanth.musicplayer.models.ListSong;
+import com.example.jayanth.musicplayer.models.Playlist;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private int currentWindow;
     private boolean playWhenReady = true;
     public static List<ListSong> totalSongList;
+    public static AllPlaylists allPlaylists;
 //    private String toResume = null;
 
 
@@ -85,7 +87,9 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 //                (Context.NOTIFICATION_SERVICE);
 //        notificationManager.cancelAll();
         totalSongList = new ArrayList<>();
+        allPlaylists = new AllPlaylists();
         loadSongList();
+        loadAllPlaylist();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         slideCoverImage = findViewById(R.id.slide_cover);
@@ -123,49 +127,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             }
         });
 
-
-        ContentResolver resolver = getContentResolver();
-        Uri media = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME};
-        String sort = MediaStore.Audio.Playlists.NAME;
-        Cursor cursor = resolver.query(media, projection, null, null, sort);
-        if (cursor != null && cursor.moveToFirst()) {
-            int songNameColumn = cursor.getColumnIndex
-                    (MediaStore.Audio.Playlists.NAME);
-            int idColumn = cursor.getColumnIndex
-                    (MediaStore.Audio.Playlists._ID);
-            do {
-                String playlistName = cursor.getString(songNameColumn);
-                int id = cursor.getInt(idColumn);
-                Toast.makeText(this, playlistName, Toast.LENGTH_SHORT).show();
-                Log.i("test", playlistName + "  " + id);
-                Uri newuri = MediaStore.Audio.Playlists.Members.getContentUri(
-                        "external", id);
-//                String[] proj = {   MediaStore.Audio.Playlists.Members.AUDIO_ID,
-//                        MediaStore.Audio.Playlists.Members.ARTIST,
-//                        MediaStore.Audio.Playlists.Members.TITLE,
-//                        MediaStore.Audio.Playlists.Members._ID
-//                };
-                ContentResolver resolver1 = getContentResolver();
-//                String[] projection1 = {MediaStore.Audio.Playlists.Members.AUDIO_ID, MediaStore.Audio
-//                        .Playlists._ID,MediaStore.Audio.Playlists.Members.PLAYLIST_ID};
-                Cursor songCursor = resolver1.query(newuri, null, null, null, null);
-                startManagingCursor(songCursor);
-                if (songCursor != null && songCursor.moveToFirst()) {
-                    int playlistSongColumn = songCursor.getColumnIndex
-                            (MediaStore.Audio.Playlists.Members.ALBUM_ID);
-                    Log.i("test", songCursor.getString(playlistSongColumn));
-
-                    songCursor.close();
-                }
-
-
-            }
-            while (cursor.moveToNext());
-            cursor.close();
-        }
-
-
     }
 
     private void loadSongList() {
@@ -180,14 +141,14 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                     (android.provider.MediaStore.Audio.Media.ALBUM_ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
-            int dataColumn = musicCursor.getColumnIndex
+            int pathColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.DATA);
 
             do {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisSongName = musicCursor.getString(songNameColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
-                String data = musicCursor.getString(dataColumn);
+                String data = musicCursor.getString(pathColumn);
                 totalSongList.add(new ListSong(thisSongName, thisArtist, data, thisId));
             }
             while (musicCursor.moveToNext());
@@ -200,6 +161,58 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         });
 
     }
+
+    private void loadAllPlaylist() {
+        ContentResolver musicResolver = getContentResolver();
+        Uri musicUri = android.provider.MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
+        String[] projection = {MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME};
+        Cursor musicCursor = musicResolver.query(musicUri, projection, null, null, null);
+        if (musicCursor != null && musicCursor.moveToFirst()) {
+            //get columns
+            int playlistNameColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Playlists.NAME);
+            int idColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Playlists._ID);
+
+            do {
+                long thisId = musicCursor.getLong(idColumn);
+                String thisPlaylistName = musicCursor.getString(playlistNameColumn);
+                Playlist playlist = new Playlist(thisPlaylistName);
+                Uri playlistUri = MediaStore.Audio.Playlists.Members.getContentUri(
+                        "external", thisId);
+                Cursor playlistCursor = musicResolver
+                        .query(playlistUri, null, null, null, null);
+                if (playlistCursor != null && playlistCursor.moveToFirst()) {
+
+                    int playlistSongNameColumn = playlistCursor.getColumnIndex
+                            (MediaStore.Audio.Playlists.Members.TITLE);
+                    int playlistArtistNameColumn = playlistCursor.getColumnIndex
+                            (MediaStore.Audio.Playlists.Members.ARTIST);
+                    int playlistSongAlbumIdColumn = playlistCursor.getColumnIndex
+                            (MediaStore.Audio.Playlists.Members.ALBUM_ID);
+                    int playlistSongPathColumn = playlistCursor.getColumnIndex
+                            (MediaStore.Audio.Playlists.Members.DATA);
+                    do {
+                        String name = playlistCursor.getString(playlistSongNameColumn);
+                        String artist = playlistCursor.getString(playlistArtistNameColumn);
+                        String path = playlistCursor.getString(playlistSongPathColumn);
+                        Long id = playlistCursor.getLong(playlistSongAlbumIdColumn);
+
+                        ListSong song = new ListSong(name, artist, path, id);
+                        playlist.addSong(song);
+
+                    } while (playlistCursor.moveToNext());
+                    playlistCursor.close();
+                    allPlaylists.addPlaylist(playlist);
+                }
+
+            }
+            while (musicCursor.moveToNext());
+            musicCursor.close();
+        }
+
+    }
+
 
     private NotificationActionService mBoundService;
     private boolean mIsBound;

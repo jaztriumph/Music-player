@@ -119,7 +119,7 @@ public class NotificationActionService extends Service {
                 .parse("content://media/external/audio/albumart");
 
         Uri songCover = ContentUris.withAppendedId(sArtworkUri,
-                song.getId());
+                song.getAlbumId());
         Picasso.with(this).load(songCover).resize(1000,1000).centerCrop().into(slideCoverImage);
         setPauseButton();
         imageButton.setOnClickListener(new View.OnClickListener() {
@@ -186,7 +186,7 @@ public class NotificationActionService extends Service {
             }
         });
         String finalUrl;
-        finalUrl = "file:///" + song.getArt();
+        finalUrl = "file:///" + song.getPath();
         Uri uri = Uri.parse(finalUrl);
         DataSource.Factory dataSourceFactory =
                 new DefaultDataSourceFactory(

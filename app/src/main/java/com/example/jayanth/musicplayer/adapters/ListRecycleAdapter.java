@@ -63,7 +63,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
                 .parse("content://media/external/audio/albumart");
 
         Uri uri = ContentUris.withAppendedId(sArtworkUri,
-                song.getId());
+                song.getAlbumId());
 //        if(isImageFile(uri.toString()))
         Picasso.with(mContext).load(uri).resize(1000, 1000).centerCrop().into(holder
                         .listSideImage,

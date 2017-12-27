@@ -7,14 +7,14 @@ package com.example.jayanth.musicplayer.models;
 public class ListSong {
     private String songName;
     private String artist;
-    private long id;
-    private String art;
+    private long albumId;
+    private String path;
 
-    public ListSong(String name, String artist, String art, long id) {
+    public ListSong(String name, String artist, String path, long albumId) {
         this.artist = artist;
-        this.id = id;
+        this.albumId = albumId;
         this.songName = name;
-        this.art = art;
+        this.path = path;
     }
 
     public String getSongName() {
@@ -25,11 +25,11 @@ public class ListSong {
         return artist;
     }
 
-    public long getId() {
-        return id;
+    public long getAlbumId() {
+        return albumId;
     }
 
-    public String getArt() {
-        return art;
+    public String getPath() {
+        return path;
     }
 }

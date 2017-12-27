@@ -99,7 +99,7 @@ public class NotificationUtil {
                     .parse("content://media/external/audio/albumart");
 
             Uri songCover = ContentUris.withAppendedId(sArtworkUri,
-                    song.getId());
+                    song.getAlbumId());
             Picasso.with(context).load(songCover).resize(1000, 1000).into
                     (bigNotificationView, R.id
                             .cover_image, NOTIFY_USER_ID, notification);
