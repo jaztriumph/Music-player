@@ -1,14 +1,9 @@
 package com.example.jayanth.musicplayer.adapters;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.ParcelFileDescriptor;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +13,9 @@ import android.widget.TextView;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.models.ListSong;
-import com.example.jayanth.musicplayer.models.Song;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.io.FileDescriptor;
-import java.net.URLConnection;
 import java.util.List;
 
 /**
@@ -75,19 +67,20 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
 //        if(isImageFile(uri.toString()))
         Picasso.with(mContext).load(uri).resize(1000, 1000).centerCrop().into(holder
                         .listSideImage,
-                new Callback(){
-            @Override
-            public void onSuccess() {
+                new Callback() {
+                    @Override
+                    public void onSuccess() {
 
 
-            }
+                    }
 
-            @Override
-            public void onError() {
+                    @Override
+                    public void onError() {
 
-                Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder.listSideImage);
-            }
-        });
+                        Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder
+                                .listSideImage);
+                    }
+                });
 //        holder.listSideImage.setImageBitmap(getAlbumart(song.getId()));
 
 

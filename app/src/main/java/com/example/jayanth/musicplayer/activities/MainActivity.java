@@ -1,6 +1,5 @@
 package com.example.jayanth.musicplayer.activities;
 
-import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -26,13 +25,11 @@ import android.widget.Toast;
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.adapters.ViewPagerAdapter;
 import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
-import com.example.jayanth.musicplayer.fragments.AllSongsFragment;
 import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.fragments.RecentFragment;
 import com.example.jayanth.musicplayer.fragments.SongsFragment;
 import com.example.jayanth.musicplayer.helper.RedirectLocation;
 import com.example.jayanth.musicplayer.models.ListSong;
-import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -53,6 +50,8 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -137,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                     (android.provider.MediaStore.Audio.Media.ALBUM_ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
-            int dataColumn=musicCursor.getColumnIndex
+            int dataColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.DATA);
 //            int artColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.p);
             //add songs to list
@@ -146,13 +145,18 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                 String thisSongName = musicCursor.getString(songNameColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
 //                String art = musicCursor.getString(artColumn);
-                String art="";
-                String data=musicCursor.getString(dataColumn);
+                String art = "";
+                String data = musicCursor.getString(dataColumn);
                 totalSongList.add(new ListSong(thisSongName, thisArtist, data, thisId));
             }
             while (musicCursor.moveToNext());
             musicCursor.close();
         }
+        Collections.sort(totalSongList, new Comparator<ListSong>() {
+            public int compare(ListSong a, ListSong b) {
+                return a.getSongName().compareTo(b.getSongName());
+            }
+        });
 
     }
 
@@ -220,27 +224,28 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new AllSongsFragment(), "stream Songs");
+//        adapter.addFrag(new AllSongsFragment(), "stream Songs");
         adapter.addFrag(new SongsFragment(), "Songs");
         adapter.addFrag(new PlaylistsFragment(), "Playlist");
         adapter.addFrag(new RecentFragment(), "Recent");
         viewPager.setAdapter(adapter);
     }
 
-    @Override
-    public void onClick(Song song) {
-        mBoundService.initializePlayer(song, this.findViewById(android.R.id.content).getRootView());
-//        playWhenReady = true;
-//        if(player!=null)
-//            player.setPlayWhenReady(true);
-//        setPauseButton();
-////        toResume = song.getUrl();
-//        initializePlayer(song.getUrl());
-//        Toast.makeText(this, "new", Toast.LENGTH_SHORT).show();
-//        Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
-//        songName.setText(song.getSong());
-//
-    }
+//    @Override
+//    public void onClick(Song song) {
+//        mBoundService.initializePlayer(song, this.findViewById(android.R.id.content)
+// .getRootView());
+////        playWhenReady = true;
+////        if(player!=null)
+////            player.setPlayWhenReady(true);
+////        setPauseButton();
+//////        toResume = song.getUrl();
+////        initializePlayer(song.getUrl());
+////        Toast.makeText(this, "new", Toast.LENGTH_SHORT).show();
+////        Picasso.with(this).load(song.getCoverImage()).into(slideCoverImage);
+////        songName.setText(song.getSong());
+////
+//    }
 
     @Override
     public void onClick(ListSong song) {

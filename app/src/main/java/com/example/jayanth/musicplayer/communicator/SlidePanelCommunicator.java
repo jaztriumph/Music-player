@@ -8,6 +8,6 @@ import com.example.jayanth.musicplayer.models.Song;
  */
 
 public interface SlidePanelCommunicator {
-    public void onClick(Song song);
+//    public void onClick(Song song);
     public void onClick(ListSong song);
 }

@@ -16,6 +16,7 @@ import android.widget.RemoteViews;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
+import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
 import com.squareup.picasso.Picasso;
@@ -43,14 +44,14 @@ public class NotificationUtil {
     public static Notification notification;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    public static void notifyUser(Context context, Song song) {
+    public static void notifyUser(Context context, ListSong song) {
         bigNotificationView = new RemoteViews(context.getPackageName(),
                 R.layout.expand_custom_notification);
         bigNotificationView.setOnClickPendingIntent(R.id.big_play_pause_btn, playPause(context));
         bigNotificationView.setOnClickPendingIntent(R.id.big_close_notification_btn, close
                 (context));
-        bigNotificationView.setTextViewText(R.id.notification_title, song.getSong());
-        bigNotificationView.setTextViewText(R.id.notification_text, song.getArtists());
+        bigNotificationView.setTextViewText(R.id.notification_title, song.getSongName());
+        bigNotificationView.setTextViewText(R.id.notification_text, song.getArtist());
 //        bigNotificationView.setImageViewIcon();
 
 
@@ -92,7 +93,7 @@ public class NotificationUtil {
 
         if (notificationManager != null) {
             notification = notificationBuilder.build();
-            Picasso.with(context).load(song.getCoverImage()).resize(200, 200).into
+            Picasso.with(context).load(song.getArt()).resize(200, 200).into
                     (bigNotificationView, R.id
                             .cover_image, NOTIFY_USER_ID, notification);
 //            final RemoteViews contentView = notification.contentView;

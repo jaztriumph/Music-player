@@ -112,7 +112,7 @@ public class AllSongsFragment extends Fragment implements RecycleAdapter
     @Override
     public void onClick(Song song) {
 //        Toast.makeText(getActivity(), "fragment", Toast.LENGTH_SHORT).show();
-        comm.onClick(song);
+//        comm.onClick(song);
     }
 
 
