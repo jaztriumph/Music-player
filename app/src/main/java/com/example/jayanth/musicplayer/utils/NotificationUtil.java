@@ -4,10 +4,12 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
@@ -93,7 +95,12 @@ public class NotificationUtil {
 
         if (notificationManager != null) {
             notification = notificationBuilder.build();
-            Picasso.with(context).load(song.getArt()).resize(200, 200).into
+            final Uri sArtworkUri = Uri
+                    .parse("content://media/external/audio/albumart");
+
+            Uri songCover = ContentUris.withAppendedId(sArtworkUri,
+                    song.getId());
+            Picasso.with(context).load(songCover).resize(1000, 1000).into
                     (bigNotificationView, R.id
                             .cover_image, NOTIFY_USER_ID, notification);
 //            final RemoteViews contentView = notification.contentView;

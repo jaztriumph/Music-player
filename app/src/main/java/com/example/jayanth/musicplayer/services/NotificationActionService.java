@@ -121,9 +121,6 @@ public class NotificationActionService extends Service {
         Uri songCover = ContentUris.withAppendedId(sArtworkUri,
                 song.getId());
         Picasso.with(this).load(songCover).resize(1000,1000).centerCrop().into(slideCoverImage);
-        playWhenReady = true;
-        if (player != null)
-            player.setPlayWhenReady(true);
         setPauseButton();
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,8 +130,6 @@ public class NotificationActionService extends Service {
             }
         });
         playWhenReady = true;
-        if (player != null)
-            player.setPlayWhenReady(true);
         if (player == null) {
             player = ExoPlayerFactory.newSimpleInstance(
                     new DefaultRenderersFactory(this),
@@ -201,6 +196,7 @@ public class NotificationActionService extends Service {
                 new ExtractorMediaSource(
                         uri, dataSourceFactory, extractorsFactory, null, null);
         player.prepare(mediaSource, true, true);
+        player.setPlayWhenReady(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             NotificationUtil.notifyUser(this, song);
         }
@@ -334,8 +330,9 @@ public class NotificationActionService extends Service {
     public void changeIcon() {
         if (playWhenReady) {
             playWhenReady = false;
-            player.setPlayWhenReady(false);
             setPlayButton();
+            player.setPlayWhenReady(false);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
                         .play_button_notification_svg);
@@ -348,8 +345,9 @@ public class NotificationActionService extends Service {
 
         } else {
             playWhenReady = true;
-            player.setPlayWhenReady(true);
             setPauseButton();
+            player.setPlayWhenReady(true);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
                         .pause_button_notification_svg);

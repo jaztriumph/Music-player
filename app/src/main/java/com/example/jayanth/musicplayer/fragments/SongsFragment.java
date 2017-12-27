@@ -80,6 +80,6 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter.ListRe
     public void onClick(ListSong song) {
         comm.onClick(song);
         Log.i("song path",song.getArt());
-        Toast.makeText(getContext(), song.getArt(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getContext(), song.getArt(), Toast.LENGTH_SHORT).show();
     }
 }
