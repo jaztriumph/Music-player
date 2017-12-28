@@ -1,6 +1,7 @@
 package com.example.jayanth.musicplayer.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.activities.PlaylistView;
 import com.example.jayanth.musicplayer.models.AllPlaylists;
 import com.squareup.picasso.Picasso;
 
@@ -21,10 +23,16 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
 
     private Context mContext;
     private AllPlaylists allPlaylists;
+    private PlaylistRecycleAdapterOnClickHandler mOnclickHandler;
+    public interface PlaylistRecycleAdapterOnClickHandler{
+        public void onPlaylistClick(long id);
+    }
 
-    public PlaylistRecycleAdapter(Context mContext, AllPlaylists allPlaylists) {
+    public PlaylistRecycleAdapter(Context mContext, AllPlaylists allPlaylists,
+                                  PlaylistRecycleAdapterOnClickHandler mOnClickHandler) {
         this.mContext = mContext;
         this.allPlaylists = allPlaylists;
+        this.mOnclickHandler=mOnClickHandler;
     }
 
 
@@ -37,6 +45,13 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
 
     @Override
     public void onBindViewHolder(PlaylistViewHolder holder, int position) {
+        final int index=position;
+        holder.view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mOnclickHandler.onPlaylistClick(index);
+            }
+        });
         holder.playlistTitle.setText(allPlaylists.getAllPlaylists().get(position).getPlaylistName
                 ());
         Picasso.with(mContext).load(R.drawable.music_player_pic).resize(1000,1000).centerCrop()
@@ -59,8 +74,8 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
         PlaylistViewHolder(View view) {
             super(view);
             this.view = view;
-            playlistThumbnail = view.findViewById(R.id.playlist_thumbnail);
-            playlistTitle = view.findViewById(R.id.playlist_title);
+            playlistThumbnail = view.findViewById(R.id.all_playlist_thumbnail);
+            playlistTitle = view.findViewById(R.id.all_playlist_title);
         }
 
         @Override

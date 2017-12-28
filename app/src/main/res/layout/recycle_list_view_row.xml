@@ -1,63 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="3dp">
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@color/windowBackground"
+    android:foreground="?android:attr/selectableItemBackground">
 
-    <ImageView
-        android:id="@+id/list_side_image"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_centerVertical="true"
-        android:src="@drawable/music_player_svg" />
-
-    <TextView
-        android:id="@+id/list_song_name"
-        android:layout_width="wrap_content"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_toEndOf="@+id/list_side_image"
-        android:layout_toLeftOf="@id/song_list_overflow"
-        android:layout_toRightOf="@+id/list_side_image"
-        android:layout_toStartOf="@id/song_list_overflow"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:padding="3dp"
-        android:textColor="#383636"
-        android:textSize="14sp"
-        tools:text="song Name" />
+        android:padding="3dp">
 
-    <TextView
-        android:id="@+id/list_artist_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/list_song_name"
-        android:layout_alignStart="@+id/list_song_name"
-        android:layout_below="@+id/list_song_name"
-        android:layout_toLeftOf="@id/song_list_overflow"
-        android:layout_toStartOf="@id/song_list_overflow"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:padding="3dp"
-        android:textSize="12sp"
-        tools:text="Artist Name" />
+        <ImageButton
+            android:id="@+id/song_list_overflow"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/list_artist_name"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@color/windowBackground"
+            android:contentDescription="@string/action_add_favourite"
+            android:src="@drawable/ic_dots" />
 
-    <ImageButton
-        android:id="@+id/song_list_overflow"
-        android:layout_width="30dp"
-        android:layout_height="match_parent"
-        android:layout_alignBottom="@+id/list_artist_name"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:background="@color/windowBackground"
-        android:src="@drawable/ic_dots" />
+        <ImageView
+            android:id="@+id/list_side_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/music_player_svg" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/list_song_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@+id/list_side_image"
+            android:layout_toLeftOf="@id/song_list_overflow"
+            android:layout_toRightOf="@+id/list_side_image"
+            android:layout_toStartOf="@id/song_list_overflow"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:padding="3dp"
+            android:textColor="#383636"
+            android:textSize="14sp"
+            tools:text="song Name" />
 
+        <TextView
+            android:id="@+id/list_artist_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/list_song_name"
+            android:layout_alignStart="@+id/list_song_name"
+            android:layout_below="@+id/list_song_name"
+            android:layout_toLeftOf="@id/song_list_overflow"
+            android:layout_toStartOf="@id/song_list_overflow"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:padding="3dp"
+            android:textSize="12sp"
+            tools:text="Artist Name" />
+
+
+    </RelativeLayout>
+</FrameLayout>
 

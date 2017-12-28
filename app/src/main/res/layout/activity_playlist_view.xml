@@ -7,9 +7,10 @@
     tools:showIn="@layout/activity_main">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/list_recycler_view"
+        android:id="@+id/playlist_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/windowBackground"
         android:clipToPadding="false"
         android:scrollbars="vertical" />
 

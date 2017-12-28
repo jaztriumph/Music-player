@@ -1,5 +1,6 @@
 package com.example.jayanth.musicplayer.activities;
 
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private boolean playWhenReady = true;
     public static List<ListSong> totalSongList;
     public static AllPlaylists allPlaylists;
+//    public static View vw;
 //    private String toResume = null;
 
 
@@ -79,13 +81,14 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+//        vw=this.findViewById(android.R.id.content).getRootView();
         setContentView(R.layout.activity_main);
 //        startService(new Intent(this,NotificationActionService.class));
 
 
-//        NotificationManager notificationManager = (NotificationManager) this.getSystemService
-//                (Context.NOTIFICATION_SERVICE);
-//        notificationManager.cancelAll();
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService
+                (Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
         totalSongList = new ArrayList<>();
         allPlaylists = new AllPlaylists();
         loadSongList();

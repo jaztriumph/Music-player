@@ -31,7 +31,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:background="?attr/colorPrimary"
-                    app:layout_scrollFlags="enterAlways"
+                    app:layout_scrollFlags="scroll"
                     app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
                 <android.support.design.widget.TabLayout
@@ -98,7 +98,6 @@
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
-                android:onClick="imagebuttonClicked"
                 android:src="@drawable/play_button_svg" />
 
         </LinearLayout>

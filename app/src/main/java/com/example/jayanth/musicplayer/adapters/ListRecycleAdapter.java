@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
@@ -25,7 +26,7 @@ import java.util.List;
 public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.MyViewHolder> {
     private Context mContext;
     private List<ListSong> songList;
-    final private ListRecycleAdapter.ListRecycleAdapterOnClickHandler mOnClickHandler;
+    private ListRecycleAdapterOnClickHandler mOnClickHandler;
 
     public interface ListRecycleAdapterOnClickHandler {
         void onClick(ListSong song);

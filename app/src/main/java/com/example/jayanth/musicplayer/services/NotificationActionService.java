@@ -333,30 +333,30 @@ public class NotificationActionService extends Service {
             setPlayButton();
             player.setPlayWhenReady(false);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
-                        .play_button_notification_svg);
-                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
-                        .play_button_notification_svg);
-                notificationBuilder.setContent(smallNotificationView);
-                notification.bigContentView = bigNotificationView;
-                notificationManager.notify(987, notification);
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+//                        .play_button_notification_svg);
+//                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+//                        .play_button_notification_svg);
+//                notificationBuilder.setContent(smallNotificationView);
+//                notification.bigContentView = bigNotificationView;
+//                notificationManager.notify(987, notification);
+//            }
 
         } else {
             playWhenReady = true;
             setPauseButton();
             player.setPlayWhenReady(true);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
-                        .pause_button_notification_svg);
-                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
-                        .pause_button_notification_svg);
-                notificationBuilder.setContent(smallNotificationView);
-                notification.bigContentView = bigNotificationView;
-                notificationManager.notify(987, notification);
-            }
+//
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+//                        .pause_button_notification_svg);
+//                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+//                        .pause_button_notification_svg);
+//                notificationBuilder.setContent(smallNotificationView);
+//                notification.bigContentView = bigNotificationView;
+//                notificationManager.notify(987, notification);
+//            }
         }
 
     }

@@ -119,7 +119,7 @@ public class NotificationUtil {
         Intent startActivityIntent = new Intent(context, MainActivity.class);
         return PendingIntent.getActivity(context, NOTIFY_USER_PENDING_INTENT_ID,
                 startActivityIntent, PendingIntent
-                        .FLAG_UPDATE_CURRENT
+                        .FLAG_CANCEL_CURRENT
         );
     }
 
