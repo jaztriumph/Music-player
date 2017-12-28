@@ -5,11 +5,14 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.example.jayanth.musicplayer.R;
@@ -59,6 +62,14 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         });
         holder.listArtist.setText(song.getArtist());
         holder.listSong.setText(song.getSongName());
+        holder.songListOverflow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPopupMenu(view);
+            }
+        });
+
+
 //        Bitmap bm = BitmapFactory.decodeFile(song.getArt());
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
@@ -91,6 +102,24 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     public int getItemCount() {
         return songList.size();
     }
+
+
+    private void showPopupMenu(View view) {
+        // inflate menu
+        PopupMenu popup = new PopupMenu(mContext, view);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.song_menu, popup.getMenu());
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                return false;
+            }
+        });
+        popup.show();
+    }
+
 
     private static boolean isImageFile(String path) {
         String mimeType = null;
@@ -126,6 +155,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         private TextView listSong, listArtist;
 
         private ImageView listSideImage;
+        private ImageButton songListOverflow;
         View view;
 
         MyViewHolder(View view) {
@@ -133,7 +163,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
             this.view = view;
             listSong = view.findViewById(R.id.list_song_name);
             listArtist = view.findViewById(R.id.list_artist_name);
-            listSideImage = view.findViewById(R.id.list_side_image);
+            songListOverflow = view.findViewById(R.id.song_list_overflow);
             listSideImage = view.findViewById(R.id.list_side_image);
         }
 

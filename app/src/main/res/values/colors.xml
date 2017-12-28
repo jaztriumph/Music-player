@@ -2,11 +2,12 @@
 <resources>
     <color name="colorPrimary">#ed2954</color>
     <color name="colorPrimaryDark">#590a10</color>
-    <color name="colorAccent">#c4c6c7</color>
+    <color name="colorAccent">#d6d7d7</color>
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="windowBackground">#FFFFFF</color>
     <color name="navigationBarColor">#000000</color>
     <color name="album_title">#4c4c4c</color>
+    <color name="text_color_primary">#c8ed2954</color>
     <color name="text_color">#0a0909</color>
     <color name="slide_color">#EEEEEE</color>
 </resources>

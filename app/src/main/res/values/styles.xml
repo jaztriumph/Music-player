@@ -8,7 +8,15 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!-- To change the popup menu and app text color  -->
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textSize">15sp</item>
+
+        <!-- To change the background of options menu-->
+        <item name="android:itemBackground">@color/colorAccent</item>
+        <!--<item name="android:popupMenuStyle">@style/PopupMenu</item>-->
     </style>
+
 
     <style name="DefaultButton">
         <item name="android:layout_width">wrap_content</item>

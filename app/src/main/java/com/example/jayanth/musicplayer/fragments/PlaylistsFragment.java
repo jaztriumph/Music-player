@@ -34,6 +34,7 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
     ListRecycleAdapter PlaylistAdapter;
     RelativeLayout allPlaylistLayout;
     RelativeLayout playlistLayout;
+    ImageButton homePlaylistBtn;
     SlidingUpPanelLayout slidingUpPanelLayout;
 
     public PlaylistsFragment() {
@@ -65,13 +66,9 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
         super.onActivityCreated(savedInstanceState);
         allPlaylistLayout = getView().findViewById(R.id.all_playlist_layout);
         playlistLayout = getView().findViewById(R.id.playlist_layout);
-        recyclerView = getView().findViewById(R.id.all_playlist_recycler_view);
-        adapter = new PlaylistRecycleAdapter(getContext(), MainActivity.allPlaylists, this);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
-        ImageButton igbtn = getView().findViewById(R.id.home_playlists_btn);
-        igbtn.setOnClickListener(new View.OnClickListener() {
+
+        homePlaylistBtn = getView().findViewById(R.id.home_playlists_btn);
+        homePlaylistBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 allPlaylistLayout.setVisibility(View.VISIBLE);
@@ -79,6 +76,11 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
             }
         });
 
+        recyclerView = getView().findViewById(R.id.all_playlist_recycler_view);
+        adapter = new PlaylistRecycleAdapter(getContext(), MainActivity.allPlaylists, this);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(adapter);
         PlaylistRecyclerView = getView().findViewById(R.id.playlist_recycler_view);
     }
 
@@ -96,10 +98,8 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
         RecyclerView.LayoutManager PlaylistLayoutManager = new LinearLayoutManager(getContext());
         PlaylistRecyclerView.setLayoutManager(PlaylistLayoutManager);
         PlaylistRecyclerView.setAdapter(PlaylistAdapter);
-//        slidingUpPanelLayout = getView().findViewById(R.id
-//                .playlist_sliding_layout);
         Toast.makeText(getContext(), String.valueOf(id), Toast.LENGTH_SHORT).show();
-//        slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+
         allPlaylistLayout.setVisibility(View.INVISIBLE);
         playlistLayout.setVisibility(View.VISIBLE);
     }
