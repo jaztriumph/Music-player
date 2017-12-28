@@ -16,7 +16,9 @@
         <item name="android:itemBackground">@color/colorAccent</item>
         <!--<item name="android:popupMenuStyle">@style/PopupMenu</item>-->
     </style>
-
+    <style name="FullHeightDialog" parent="android:style/Theme.Dialog">
+        <item name="android:windowNoTitle">true</item>
+    </style>
 
     <style name="DefaultButton">
         <item name="android:layout_width">wrap_content</item>

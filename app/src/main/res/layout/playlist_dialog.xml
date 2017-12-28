@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/windowBackground"
+        android:fontFamily="serif"
+        android:padding="10dp"
+        android:text="@string/add_to_playlist"
+        android:textColor="@color/text_color"
+        android:textSize="18sp" />
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/windowBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:fontFamily="serif"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:padding="10dp"
+        android:text="Create Playlist"
+        android:textColor="@color/colorAccent1"
+        android:textSize="15sp" />
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/playlist_dialog_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/windowBackground"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
+
+</LinearLayout>
