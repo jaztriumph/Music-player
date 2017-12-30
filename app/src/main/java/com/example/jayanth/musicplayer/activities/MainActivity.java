@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private boolean playWhenReady = true;
     public static List<ListSong> totalSongList;
     public static AllPlaylists allPlaylists;
+    public static ViewPagerAdapter adapter;
 //    public static View vw;
 //    private String toResume = null;
 
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
         NotificationManager notificationManager = (NotificationManager) this.getSystemService
                 (Context.NOTIFICATION_SERVICE);
+        assert notificationManager != null;
         notificationManager.cancelAll();
         totalSongList = new ArrayList<>();
         allPlaylists = new AllPlaylists();
@@ -140,19 +142,22 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             //get columns
             int songNameColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
+            int albumIdColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ALBUM_ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
             int pathColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.DATA);
+            int idColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media._ID);
 
             do {
-                long thisId = musicCursor.getLong(idColumn);
+                long thisAlbumId = musicCursor.getLong(albumIdColumn );
                 String thisSongName = musicCursor.getString(songNameColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 String data = musicCursor.getString(pathColumn);
-                totalSongList.add(new ListSong(thisSongName, thisArtist, data, thisId));
+                long id = musicCursor.getLong(idColumn);
+                totalSongList.add(new ListSong(thisSongName, thisArtist, data, thisAlbumId, id));
             }
             while (musicCursor.moveToNext());
             musicCursor.close();
@@ -180,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             do {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisPlaylistName = musicCursor.getString(playlistNameColumn);
-                Playlist playlist = new Playlist(thisPlaylistName);
+                Playlist playlist = new Playlist(thisPlaylistName, thisId);
                 Uri playlistUri = MediaStore.Audio.Playlists.Members.getContentUri(
                         "external", thisId);
                 Cursor playlistCursor = musicResolver
@@ -195,13 +200,16 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                             (MediaStore.Audio.Playlists.Members.ALBUM_ID);
                     int playlistSongPathColumn = playlistCursor.getColumnIndex
                             (MediaStore.Audio.Playlists.Members.DATA);
+                    int playlistSongAudioIdColumn = playlistCursor.getColumnIndex
+                            (MediaStore.Audio.Playlists.Members.AUDIO_ID);
                     do {
                         String name = playlistCursor.getString(playlistSongNameColumn);
                         String artist = playlistCursor.getString(playlistArtistNameColumn);
                         String path = playlistCursor.getString(playlistSongPathColumn);
-                        Long id = playlistCursor.getLong(playlistSongAlbumIdColumn);
+                        long albumId = playlistCursor.getLong(playlistSongAlbumIdColumn);
+                        long audioId = playlistCursor.getLong(playlistSongAudioIdColumn);
 
-                        ListSong song = new ListSong(name, artist, path, id);
+                        ListSong song = new ListSong(name, artist, path, albumId, audioId);
                         playlist.addSong(song);
 
                     } while (playlistCursor.moveToNext());
@@ -280,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
 
     private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+       adapter = new ViewPagerAdapter(getSupportFragmentManager());
 //        adapter.addFrag(new AllSongsFragment(), "stream Songs");
         adapter.addFrag(new SongsFragment(), "Songs");
         adapter.addFrag(new PlaylistsFragment(), "Playlist");

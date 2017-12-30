@@ -7,8 +7,6 @@ import android.app.PendingIntent;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
@@ -19,7 +17,6 @@ import android.widget.RemoteViews;
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.models.ListSong;
-import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
 import com.squareup.picasso.Picasso;
 

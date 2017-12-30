@@ -3,7 +3,6 @@ package com.example.jayanth.musicplayer.services;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
@@ -18,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
-import com.example.jayanth.musicplayer.helper.RedirectLocation;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
@@ -40,11 +38,8 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.squareup.picasso.Picasso;
-
-import java.util.concurrent.ExecutionException;
 
 import static com.example.jayanth.musicplayer.utils.NotificationUtil.bigNotificationView;
 import static com.example.jayanth.musicplayer.utils.NotificationUtil.notification;
@@ -94,7 +89,13 @@ public class NotificationActionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action = intent.getAction();
+        String action = null;
+        if (intent != null) {
+            action = intent.getAction();
+        }
+//        else{
+//            Toast.makeText(this, "intent is null", Toast.LENGTH_SHORT).show();
+//        }
         if (action != null && player != null) {
             if (action.equals("playPause"))
                 changeIcon();
@@ -120,7 +121,7 @@ public class NotificationActionService extends Service {
 
         Uri songCover = ContentUris.withAppendedId(sArtworkUri,
                 song.getAlbumId());
-        Picasso.with(this).load(songCover).resize(1000,1000).centerCrop().into(slideCoverImage);
+        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into(slideCoverImage);
         setPauseButton();
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,7 +206,8 @@ public class NotificationActionService extends Service {
 
 
 //    public void initializePlayer(Song song, View view) {
-////        String source = "file:///storage/sdcard0/Sounds/Music/02---Yo-Yo-Honey-Singh---Angreji" +
+////        String source = "file:///storage/sdcard0/Sounds/Music/02---Yo-Yo-Honey-Singh
+/// ---Angreji" +
 ////                "-Beat-Ft.-Gippy.mp3";
 ////        Context mContext = getApplicationContext();
 ////        if (mExoPlayer == null) {

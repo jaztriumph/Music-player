@@ -10,10 +10,12 @@ import java.util.List;
 public class Playlist {
     private List<ListSong> songList;
     private String playlistName;
+    private long playlistId;
 
-   public Playlist(String playlistName) {
+    public Playlist(String playlistName, long id) {
         this.playlistName = playlistName;
-        songList=new ArrayList<>();
+        this.playlistId = id;
+        songList = new ArrayList<>();
     }
 
     public List<ListSong> getSongList() {
@@ -26,6 +28,14 @@ public class Playlist {
 
     public void setPlaylistName(String playlistName) {
         this.playlistName = playlistName;
+    }
+
+    public void setPlaylistId(long id) {
+        this.playlistId = id;
+    }
+
+    public long getPlaylistId() {
+        return playlistId;
     }
 
     public String getPlaylistName() {

@@ -24,7 +24,7 @@
 
         <ImageButton
             android:id="@+id/small_previous_btn"
-            style="@style/DefaultButton"
+            style="@style/NotificationDefaultButton"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/back_svg" />
@@ -32,7 +32,7 @@
 
         <ImageButton
             android:id="@+id/small_play_pause_btn"
-            style="@style/DefaultButton"
+            style="@style/NotificationDefaultButton"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -45,7 +45,7 @@
 
         <ImageButton
             android:id="@+id/small_next_btn"
-            style="@style/DefaultButton"
+            style="@style/NotificationDefaultButton"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -53,7 +53,7 @@
 
         <ImageButton
             android:id="@+id/small_close_notification_btn"
-            style="@style/DefaultButton"
+            style="@style/NotificationDefaultButton"
             android:layout_width="30dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

@@ -11,12 +11,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.webkit.MimeTypeMap;
-import android.widget.Adapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,6 +36,8 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     private ListRecycleAdapterOnClickHandler mOnClickHandler;
     private RecyclerView playlistDialogListRecyclerView;
     private PlaylistDialogListAdapter playlistDialogListAdapter;
+    public static Dialog dialog;
+
     public interface ListRecycleAdapterOnClickHandler {
         void onClick(ListSong song);
     }
@@ -73,7 +72,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         holder.songListOverflow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showPopupMenu(view);
+                showPopupMenu(view, song);
             }
         });
 
@@ -112,7 +111,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     }
 
 
-    private void showPopupMenu(View view) {
+    private void showPopupMenu(View view, final ListSong song) {
         // inflate menu
         PopupMenu popup = new PopupMenu(mContext, view);
         MenuInflater inflater = popup.getMenuInflater();
@@ -131,7 +130,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
                         return true;
                     case R.id.action_add_to_playlist:
 //                        Toast.makeText(mContext, "Play next", Toast.LENGTH_SHORT).show();
-                        showPlaylistDialog();
+                        showPlaylistDialog(song);
                         return true;
                     default:
                 }
@@ -141,14 +140,26 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         popup.show();
     }
 
-    private void showPlaylistDialog() {
-        final Dialog dialog = new Dialog(mContext, R.style.FullHeightDialog);
-//        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+    private void showPlaylistDialog(ListSong song) {
+        dialog = new Dialog(mContext, R.style.FullHeightDialog);
         dialog.setContentView(R.layout.playlist_dialog);
-//        dialog.setTitle("Add to Playlist");
-        playlistDialogListRecyclerView=dialog.findViewById(R.id.playlist_dialog_list);
-        playlistDialogListAdapter = new PlaylistDialogListAdapter(mContext, MainActivity.allPlaylists);
-        RecyclerView.LayoutManager layoutManager=new LinearLayoutManager(mContext);
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        TextView createPlaylistText = dialog.findViewById(R.id.create_playlist_text);
+        createPlaylistText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                Dialog createPlaylistDialog = new Dialog(mContext, R.style.FullHeightDialog);
+                createPlaylistDialog.getWindow().setBackgroundDrawableResource(android.R.color
+                        .transparent);
+                createPlaylistDialog.setContentView(R.layout.create_playlist_dialog);
+                createPlaylistDialog.show();
+            }
+        });
+        playlistDialogListRecyclerView = dialog.findViewById(R.id.playlist_dialog_list);
+        playlistDialogListAdapter = new PlaylistDialogListAdapter(mContext, MainActivity
+                .allPlaylists, song);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mContext);
         playlistDialogListRecyclerView.setLayoutManager(layoutManager);
         playlistDialogListRecyclerView.setAdapter(playlistDialogListAdapter);
         dialog.show();
