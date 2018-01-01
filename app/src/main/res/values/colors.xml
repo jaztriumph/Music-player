@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#590a10</color>
     <color name="colorAccent">#bbbcbc</color>
     <color name="colorAccent1">#848484</color>
-    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="textColorWhite">#FFFFFF</color>
     <color name="windowBackground">#FFFFFF</color>
     <color name="navigationBarColor">#000000</color>
     <color name="album_title">#4c4c4c</color>

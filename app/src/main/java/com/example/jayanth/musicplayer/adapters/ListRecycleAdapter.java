@@ -1,9 +1,12 @@
 package com.example.jayanth.musicplayer.adapters;
 
 import android.app.Dialog;
+import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -20,11 +25,15 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
+import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.models.ListSong;
+import com.example.jayanth.musicplayer.models.Playlist;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+
+import static com.example.jayanth.musicplayer.activities.MainActivity.allPlaylists;
 
 /**
  * Created by jayanth on 23/12/17.
@@ -105,9 +114,36 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
 
     }
 
+
     @Override
     public int getItemCount() {
         return songList.size();
+    }
+
+
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private TextView listSong, listArtist;
+
+        private ImageView listSideImage;
+        private ImageButton songListOverflow;
+        View view;
+
+        MyViewHolder(View view) {
+            super(view);
+            this.view = view;
+            listSong = view.findViewById(R.id.list_song_name);
+            listArtist = view.findViewById(R.id.list_artist_name);
+            songListOverflow = view.findViewById(R.id.song_list_overflow);
+            listSideImage = view.findViewById(R.id.list_side_image);
+        }
+
+        @Override
+        public void onClick(View view) {
+//            Toast.makeText(mContext, "adapter", Toast.LENGTH_SHORT).show();
+//            int adapterPosition = getAdapterPosition();
+//            mOnClickHandler.onClick(songList.get(adapterPosition));
+
+        }
     }
 
 
@@ -140,30 +176,94 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         popup.show();
     }
 
-    private void showPlaylistDialog(ListSong song) {
+
+    private void showPlaylistDialog(final ListSong song) {
         dialog = new Dialog(mContext, R.style.FullHeightDialog);
         dialog.setContentView(R.layout.playlist_dialog);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         TextView createPlaylistText = dialog.findViewById(R.id.create_playlist_text);
+
+
         createPlaylistText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dialog.dismiss();
-                Dialog createPlaylistDialog = new Dialog(mContext, R.style.FullHeightDialog);
+                final Dialog createPlaylistDialog = new Dialog(mContext, R.style.FullHeightDialog);
                 createPlaylistDialog.getWindow().setBackgroundDrawableResource(android.R.color
                         .transparent);
                 createPlaylistDialog.setContentView(R.layout.create_playlist_dialog);
+                Button canclePlaylistBtn = createPlaylistDialog.findViewById(R.id
+                        .cancel_playlist_btn);
+                Button addPlaylistBtn = createPlaylistDialog.findViewById(R.id
+                        .add_playlist_btn);
+                final EditText newPlaylistText = createPlaylistDialog.findViewById(R.id
+                        .new_playlist_Text);
+
+                canclePlaylistBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        createPlaylistDialog.dismiss();
+                    }
+                });
+                addPlaylistBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String playlistName = newPlaylistText.getText().toString();
+                        if (addNewPlaylist(playlistName, song))
+                            createPlaylistDialog.dismiss();
+                    }
+                });
                 createPlaylistDialog.show();
             }
         });
+
+
         playlistDialogListRecyclerView = dialog.findViewById(R.id.playlist_dialog_list);
-        playlistDialogListAdapter = new PlaylistDialogListAdapter(mContext, MainActivity
-                .allPlaylists, song);
+        playlistDialogListAdapter = new PlaylistDialogListAdapter(mContext,
+                allPlaylists, song);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mContext);
         playlistDialogListRecyclerView.setLayoutManager(layoutManager);
         playlistDialogListRecyclerView.setAdapter(playlistDialogListAdapter);
         dialog.show();
     }
+
+    private boolean addNewPlaylist(String playlistName, ListSong song) {
+        Uri uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
+        ContentResolver resolver = mContext.getContentResolver();
+        ContentValues values = new ContentValues(1);
+        values.put(MediaStore.Audio.Playlists.NAME, playlistName);
+        Uri returnUri = resolver.insert(uri, values);
+        if (returnUri == null) {
+            Toast.makeText(mContext, "Playlist already exists", Toast.LENGTH_SHORT).show();
+            return false;
+        } else {
+            String[] val = returnUri.toString().split("/");
+            long playlist_id = Long.parseLong(val[val.length - 1]);
+            Playlist newPlaylist = new Playlist(playlistName, playlist_id);
+            newPlaylist.addSong(song);
+
+//            Uri playlistUri = MediaStore.Audio.Playlists.Members.getContentUri(
+//                    "external", playlist_id);
+
+            ContentValues newPlaylistValues = new ContentValues();
+            newPlaylistValues.put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, 0);
+            newPlaylistValues.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, song.getId());
+            newPlaylistValues.put(MediaStore.Audio.Playlists.Members.PLAYLIST_ID,
+                    playlist_id);
+
+            Uri returnSongUri =resolver.insert(returnUri, newPlaylistValues);
+            if(returnSongUri==null)
+            {
+                Toast.makeText(mContext, "failed", Toast.LENGTH_SHORT).show();
+            }
+            //updating the loaded allPlaylists and user view
+            allPlaylists.addPlaylist(newPlaylist);
+            PlaylistsFragment.adapter.notifyDataSetChanged();
+            return true;
+        }
+
+    }
+
 
     private static boolean isImageFile(String path) {
         String mimeType = null;
@@ -195,28 +295,4 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
 //    }
 
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private TextView listSong, listArtist;
-
-        private ImageView listSideImage;
-        private ImageButton songListOverflow;
-        View view;
-
-        MyViewHolder(View view) {
-            super(view);
-            this.view = view;
-            listSong = view.findViewById(R.id.list_song_name);
-            listArtist = view.findViewById(R.id.list_artist_name);
-            songListOverflow = view.findViewById(R.id.song_list_overflow);
-            listSideImage = view.findViewById(R.id.list_side_image);
-        }
-
-        @Override
-        public void onClick(View view) {
-//            Toast.makeText(mContext, "adapter", Toast.LENGTH_SHORT).show();
-//            int adapterPosition = getAdapterPosition();
-//            mOnClickHandler.onClick(songList.get(adapterPosition));
-
-        }
-    }
 }

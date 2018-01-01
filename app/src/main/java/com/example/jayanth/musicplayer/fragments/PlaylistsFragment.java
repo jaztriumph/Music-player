@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
@@ -28,13 +28,14 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
 
     private SlidePanelCommunicator comm;
     RecyclerView recyclerView;
-    PlaylistRecycleAdapter adapter;
+    public static PlaylistRecycleAdapter adapter;
 
     RecyclerView PlaylistRecyclerView;
     ListRecycleAdapter PlaylistAdapter;
     RelativeLayout allPlaylistLayout;
     RelativeLayout playlistLayout;
     ImageButton homePlaylistBtn;
+    TextView playlistNameText;
     SlidingUpPanelLayout slidingUpPanelLayout;
 
     public PlaylistsFragment() {
@@ -66,6 +67,7 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
         super.onActivityCreated(savedInstanceState);
         allPlaylistLayout = getView().findViewById(R.id.all_playlist_layout);
         playlistLayout = getView().findViewById(R.id.playlist_layout);
+        playlistNameText = getView().findViewById(R.id.playlist_name_text);
 
         homePlaylistBtn = getView().findViewById(R.id.home_playlists_btn);
         homePlaylistBtn.setOnClickListener(new View.OnClickListener() {
@@ -98,8 +100,10 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
         RecyclerView.LayoutManager PlaylistLayoutManager = new LinearLayoutManager(getContext());
         PlaylistRecyclerView.setLayoutManager(PlaylistLayoutManager);
         PlaylistRecyclerView.setAdapter(PlaylistAdapter);
-        Toast.makeText(getContext(), String.valueOf(id), Toast.LENGTH_SHORT).show();
-
+//        Toast.makeText(getContext(), String.valueOf(id), Toast.LENGTH_SHORT).show();
+        playlistNameText.setText(MainActivity.allPlaylists
+                .getAllPlaylists()
+                .get((int) id).getPlaylistName());
         allPlaylistLayout.setVisibility(View.INVISIBLE);
         playlistLayout.setVisibility(View.VISIBLE);
     }

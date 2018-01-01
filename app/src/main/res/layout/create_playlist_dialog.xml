@@ -5,11 +5,10 @@
     android:background="@color/windowBackground">
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/new_playlist_Text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="15dp"
-        android:text="playlist"
         android:textColor="@color/text_color" />
 
     <Button

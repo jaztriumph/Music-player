@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                     (MediaStore.Audio.Media._ID);
 
             do {
-                long thisAlbumId = musicCursor.getLong(albumIdColumn );
+                long thisAlbumId = musicCursor.getLong(albumIdColumn);
                 String thisSongName = musicCursor.getString(songNameColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 String data = musicCursor.getString(pathColumn);
@@ -214,9 +214,9 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
                     } while (playlistCursor.moveToNext());
                     playlistCursor.close();
-                    allPlaylists.addPlaylist(playlist);
-                }
 
+                }
+                allPlaylists.addPlaylist(playlist);
             }
             while (musicCursor.moveToNext());
             musicCursor.close();
@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
 
     private void setupViewPager(ViewPager viewPager) {
-       adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
 //        adapter.addFrag(new AllSongsFragment(), "stream Songs");
         adapter.addFrag(new SongsFragment(), "Songs");
         adapter.addFrag(new PlaylistsFragment(), "Playlist");

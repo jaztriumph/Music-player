@@ -49,16 +49,30 @@
             android:scrollbars="vertical" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/playlist_name_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingTop="3dp"
+            android:layout_alignLeft="@+id/constant_text"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="34dp"
-            android:layout_marginStart="34dp"
+            android:layout_alignStart="@+id/constant_text"
+            android:fontFamily="serif"
+            android:text="First"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/constant_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="3dp"
+            android:textColor="@color/text_color_primary"
+            android:textSize="12sp"
+            android:layout_below="@+id/playlist_name_text"
+            android:layout_marginLeft="24dp"
+            android:layout_marginStart="24dp"
             android:layout_toEndOf="@+id/home_playlists_btn"
             android:layout_toRightOf="@+id/home_playlists_btn"
-            android:padding="10dp"
-            android:text="First" />
+            android:text="My Playlist" />
 
     </RelativeLayout>
 </FrameLayout>
