@@ -72,8 +72,10 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private int currentWindow;
     private boolean playWhenReady = true;
     public static List<ListSong> totalSongList;
+    public static List<ListSong> recentSongList;
     public static AllPlaylists allPlaylists;
     public static ViewPagerAdapter adapter;
+    public static List<ListSong> recentPlayed;
 //    public static View vw;
 //    private String toResume = null;
 
@@ -103,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         toolbar.setTitle("Music player");
 
         viewPager = findViewById(R.id.viewpager);
+        viewPager.setOffscreenPageLimit(2);
         setupViewPager(viewPager);
 
         tabLayout = findViewById(R.id.tabs);

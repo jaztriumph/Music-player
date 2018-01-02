@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
@@ -110,6 +111,7 @@ public class NotificationActionService extends Service {
 
 
     public void initializePlayer(ListSong song, View view) {
+        MainActivity.recentSongList.add(0,song);
         mView = view;
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
@@ -202,6 +204,7 @@ public class NotificationActionService extends Service {
             NotificationUtil.notifyUser(this, song);
         }
 
+        MainActivity.recentSongList.add(song);
     }
 
 
