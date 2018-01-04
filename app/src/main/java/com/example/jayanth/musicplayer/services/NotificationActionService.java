@@ -3,6 +3,7 @@ package com.example.jayanth.musicplayer.services;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
@@ -43,6 +44,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.google.gson.Gson;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import static com.example.jayanth.musicplayer.utils.NotificationUtil.bigNotificationView;
@@ -115,19 +117,33 @@ public class NotificationActionService extends Service {
     }
 
 
-    public void initializePlayer(ListSong song, View view) {
+    public void initializePlayer(ListSong song, View view, boolean state) {
         mView = view;
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
         slideCoverImage = view.findViewById(R.id.slide_cover);
         songName.setText(song.getSongName());
         setPauseButton();
+
+
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
-
         Uri songCover = ContentUris.withAppendedId(sArtworkUri,
                 song.getAlbumId());
-        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into(slideCoverImage);
+        final Context context = this;
+        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into
+                (slideCoverImage, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError() {
+                        Picasso.with(context).load(R.drawable.music_player_svg).into
+                                (slideCoverImage);
+                    }
+                });
         setPauseButton();
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,17 +152,16 @@ public class NotificationActionService extends Service {
                     changeIcon();
             }
         });
-        playWhenReady = true;
+        playWhenReady = state;
         if (player == null) {
             player = ExoPlayerFactory.newSimpleInstance(
                     new DefaultRenderersFactory(this),
                     new DefaultTrackSelector(), new DefaultLoadControl());
-
-
             playerView = view.findViewById(R.id.player_background_view);
             playerView.setPlayer(player);
             player.setPlayWhenReady(playWhenReady);
             player.seekTo(currentWindow, playbackPosition);
+            playerView.setControllerHideOnTouch(false);
         }
         player.addListener(new ExoPlayer.EventListener() {
             @Override
@@ -157,7 +172,7 @@ public class NotificationActionService extends Service {
             @Override
             public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray
                     trackSelections) {
-
+//                initializePlayer(song,view);
             }
 
             @Override
@@ -192,31 +207,38 @@ public class NotificationActionService extends Service {
 
             }
         });
+
+
         String finalUrl;
         finalUrl = "file:///" + song.getPath();
         Uri uri = Uri.parse(finalUrl);
+
         DataSource.Factory dataSourceFactory =
                 new DefaultDataSourceFactory(
                         this, Util.getUserAgent(this, "Music Player"), null);
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+
         MediaSource mediaSource =
                 new ExtractorMediaSource(
                         uri, dataSourceFactory, extractorsFactory, null, null);
+
         player.prepare(mediaSource, true, true);
-        player.setPlayWhenReady(true);
+        player.setPlayWhenReady(state);
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             NotificationUtil.notifyUser(this, song);
         }
 
-        if(MainActivity.recentPlayed==null)
-        {
-            MainActivity.recentPlayed=new RecentPlayed();
+
+        if (MainActivity.recentPlayed == null) {
+            MainActivity.recentPlayed = new RecentPlayed();
         }
         MainActivity.recentPlayed.addSong(song);
-        String json=gson.toJson(MainActivity.recentPlayed);
-        MainActivity.prefsEditor.putString("recentPlayed",json);
+        String json = gson.toJson(MainActivity.recentPlayed);
+        MainActivity.prefsEditor.putString("recentPlayed", json);
         MainActivity.prefsEditor.apply();
-//        RecentFragment.recycleAdapter.notifyDataSetChanged();
+        RecentFragment.recycleAdapter.notifyDataSetChanged();
     }
 
 

@@ -81,9 +81,36 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     public static RecentPlayed recentPlayed;
     public static SharedPreferences mPrefs;
     public static SharedPreferences.Editor prefsEditor;
-    Gson gson;
-//    public static View vw;
-//    private String toResume = null;
+    private Gson gson;
+    private NotificationActionService mBoundService;
+    private boolean mIsBound;
+    View view;
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the service object we can use to
+            // interact with the service.  Because we have bound to a explicit
+            // service that we know is running in our own process, we can
+            // cast its IBinder to a concrete class and directly access it.
+            mBoundService = ((NotificationActionService.LocalBinder) service).getService();
+            if (recentPlayed.getRecentPlayed().size() > 0) {
+                mBoundService.initializePlayer(recentPlayed.getRecentPlayed().get(0), view,false);
+            }
+            // Tell the user about this for our demo.
+//            Toast.makeText(MainActivity.this,"started",
+//                    Toast.LENGTH_SHORT).show();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            // Because it is running in our same process, we should never
+            // see this happen.
+            mBoundService = null;
+            Toast.makeText(MainActivity.this, "stopped",
+                    Toast.LENGTH_SHORT).show();
+        }
+    };
 
 
     @Override
@@ -94,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         setContentView(R.layout.activity_main);
 //        startService(new Intent(this,NotificationActionService.class));
 
-
+        view = this.findViewById(android.R.id.content).getRootView();
         NotificationManager notificationManager = (NotificationManager) this.getSystemService
                 (Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
@@ -146,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
             }
         });
+
     }
 
     private void loadRecentPlayed() {
@@ -250,34 +278,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     }
 
 
-    private NotificationActionService mBoundService;
-    private boolean mIsBound;
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            // This is called when the connection with the service has been
-            // established, giving us the service object we can use to
-            // interact with the service.  Because we have bound to a explicit
-            // service that we know is running in our own process, we can
-            // cast its IBinder to a concrete class and directly access it.
-            mBoundService = ((NotificationActionService.LocalBinder) service).getService();
-
-            // Tell the user about this for our demo.
-//            Toast.makeText(MainActivity.this,"started",
-//                    Toast.LENGTH_SHORT).show();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-            mBoundService = null;
-            Toast.makeText(MainActivity.this, "stopped",
-                    Toast.LENGTH_SHORT).show();
-        }
-    };
-
     void doBindService() {
         // Establish a connection with the service.  We use an explicit
         // class name because we want a specific service implementation that
@@ -339,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
     @Override
     public void onClick(ListSong song) {
-        mBoundService.initializePlayer(song, this.findViewById(android.R.id.content).getRootView());
+        mBoundService.initializePlayer(song, view, true);
     }
 
     @Override
