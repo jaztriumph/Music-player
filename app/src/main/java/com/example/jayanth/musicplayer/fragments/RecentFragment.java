@@ -1,64 +1,42 @@
 package com.example.jayanth.musicplayer.fragments;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.activities.MainActivity;
+import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
+import com.example.jayanth.musicplayer.adapters.SongListAdapter;
+import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
+import com.example.jayanth.musicplayer.models.ListSong;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link RecentFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link RecentFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class RecentFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+import java.util.ArrayList;
+import java.util.List;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+public class RecentFragment extends Fragment implements ListRecycleAdapter
+        .ListRecycleAdapterOnClickHandler {
 
-    public RecentFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment RecentFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static RecentFragment newInstance(String param1, String param2) {
-        RecentFragment fragment = new RecentFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private RecyclerView recyclerView;
+    public static ListRecycleAdapter recycleAdapter;
+    private List<ListSong> recentSongList;
+    private SlidePanelCommunicator comm;
+    ListView listView;
+    private static SongListAdapter adapter;
+    Context context;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
     }
 
     @Override
@@ -68,33 +46,49 @@ public class RecentFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_recent, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+//        recentSongList = new ArrayList<>();
+        this.context = context;
+        if (MainActivity.recentPlayed != null) {
+            recentSongList = MainActivity.recentPlayed.getRecentPlayed();
         }
+        if (recentSongList == null) {
+            recentSongList = new ArrayList<>();
+        }
+        comm = (SlidePanelCommunicator) context;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        recyclerView = getView().findViewById(R.id.recent_played_recycler_view);
+
+        recycleAdapter = new ListRecycleAdapter(getActivity(), recentSongList, this);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(recycleAdapter);
+
+//        listView = getView().findViewById(R.id.list);
+//        adapter = new SongListAdapter(MainActivity.totalSongList, getActivity());
+//        listView.setAdapter(adapter);
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                Toast.makeText(context, "hello", Toast.LENGTH_SHORT).show();
+//                ListSong song = MainActivity.totalSongList.get(i);
+//                comm.onClick(song);
+//            }
+//        });
+    }
 
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+    public void onClick(ListSong song) {
+        comm.onClick(song);
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
+
 }

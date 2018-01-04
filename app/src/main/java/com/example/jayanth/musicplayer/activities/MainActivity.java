@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -33,6 +35,7 @@ import com.example.jayanth.musicplayer.helper.RedirectLocation;
 import com.example.jayanth.musicplayer.models.AllPlaylists;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Playlist;
+import com.example.jayanth.musicplayer.models.RecentPlayed;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -50,6 +53,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.gson.Gson;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
@@ -72,10 +76,12 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private int currentWindow;
     private boolean playWhenReady = true;
     public static List<ListSong> totalSongList;
-    public static List<ListSong> recentSongList;
     public static AllPlaylists allPlaylists;
     public static ViewPagerAdapter adapter;
-    public static List<ListSong> recentPlayed;
+    public static RecentPlayed recentPlayed;
+    public static SharedPreferences mPrefs;
+    public static SharedPreferences.Editor prefsEditor;
+    Gson gson;
 //    public static View vw;
 //    private String toResume = null;
 
@@ -91,12 +97,18 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
         NotificationManager notificationManager = (NotificationManager) this.getSystemService
                 (Context.NOTIFICATION_SERVICE);
-        assert notificationManager != null;
-        notificationManager.cancelAll();
+        if (notificationManager != null) {
+            notificationManager.cancelAll();
+        }
+        mPrefs = getPreferences(MODE_PRIVATE);
+        prefsEditor = mPrefs.edit();
+        gson = new Gson();
+        recentPlayed = new RecentPlayed();
         totalSongList = new ArrayList<>();
         allPlaylists = new AllPlaylists();
         loadSongList();
         loadAllPlaylist();
+        loadRecentPlayed();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         slideCoverImage = findViewById(R.id.slide_cover);
@@ -134,7 +146,17 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
             }
         });
+    }
 
+    private void loadRecentPlayed() {
+        try {
+
+            String json = mPrefs.getString("recentPlayed", "");
+            recentPlayed = gson.fromJson(json, RecentPlayed.class);
+
+        } catch (Exception e) {
+            Log.e("preferences", e.toString());
+        }
     }
 
     private void loadSongList() {

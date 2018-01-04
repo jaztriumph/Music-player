@@ -18,7 +18,9 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
+import com.example.jayanth.musicplayer.fragments.RecentFragment;
 import com.example.jayanth.musicplayer.models.ListSong;
+import com.example.jayanth.musicplayer.models.RecentPlayed;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -40,6 +42,7 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import static com.example.jayanth.musicplayer.utils.NotificationUtil.bigNotificationView;
@@ -65,6 +68,7 @@ public class NotificationActionService extends Service {
     private ImageView slideCoverImage;
     private Song currentSong;
     private SimpleExoPlayer mExoPlayer;
+    Gson gson;
 
     public class LocalBinder extends Binder {
         public NotificationActionService getService() {
@@ -85,6 +89,7 @@ public class NotificationActionService extends Service {
     public void onCreate() {
         mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNM.cancelAll();
+        gson = new Gson();
 
     }
 
@@ -111,7 +116,6 @@ public class NotificationActionService extends Service {
 
 
     public void initializePlayer(ListSong song, View view) {
-        MainActivity.recentSongList.add(0,song);
         mView = view;
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
@@ -204,7 +208,15 @@ public class NotificationActionService extends Service {
             NotificationUtil.notifyUser(this, song);
         }
 
-        MainActivity.recentSongList.add(song);
+        if(MainActivity.recentPlayed==null)
+        {
+            MainActivity.recentPlayed=new RecentPlayed();
+        }
+        MainActivity.recentPlayed.addSong(song);
+        String json=gson.toJson(MainActivity.recentPlayed);
+        MainActivity.prefsEditor.putString("recentPlayed",json);
+        MainActivity.prefsEditor.apply();
+//        RecentFragment.recycleAdapter.notifyDataSetChanged();
     }
 
 
