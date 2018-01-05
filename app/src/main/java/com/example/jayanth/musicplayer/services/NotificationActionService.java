@@ -10,6 +10,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -34,11 +35,13 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.PlaybackControlView;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -70,6 +73,8 @@ public class NotificationActionService extends Service {
     private ImageView slideCoverImage;
     private Song currentSong;
     private SimpleExoPlayer mExoPlayer;
+    private PlaybackControlView controls;
+
     Gson gson;
 
     public class LocalBinder extends Binder {
@@ -122,10 +127,164 @@ public class NotificationActionService extends Service {
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
         slideCoverImage = view.findViewById(R.id.slide_cover);
-        songName.setText(song.getSongName());
+//        songName.setText(song.getSongName());
         setPauseButton();
 
 
+//        final Uri sArtworkUri = Uri
+//                .parse("content://media/external/audio/albumart");
+//        Uri songCover = ContentUris.withAppendedId(sArtworkUri,
+//                song.getAlbumId());
+//        final Context context = this;
+//        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into
+//                (slideCoverImage, new Callback() {
+//                    @Override
+//                    public void onSuccess() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError() {
+//                        Picasso.with(context).load(R.drawable.music_player_svg).into
+//                                (slideCoverImage);
+//                    }
+//                });
+//        setPauseButton();
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (player != null)
+                    changeIcon();
+            }
+        });
+        playWhenReady = state;
+        if (player == null) {
+            player = ExoPlayerFactory.newSimpleInstance(
+                    new DefaultRenderersFactory(this),
+                    new DefaultTrackSelector(), new DefaultLoadControl());
+            playerView = view.findViewById(R.id.player_background_view);
+            playerView.setPlayer(player);
+            player.setPlayWhenReady(playWhenReady);
+            player.seekTo(currentWindow, playbackPosition);
+            playerView.setControllerHideOnTouch(false);
+
+        }
+        player.addListener(new ExoPlayer.EventListener() {
+            @Override
+            public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+            }
+
+            @Override
+            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray
+                    trackSelections) {
+
+            }
+
+            @Override
+            public void onLoadingChanged(boolean isLoading) {
+
+            }
+
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                if (playWhenReady) {
+                    setPauseButton();
+                } else {
+                    setPlayButton();
+                }
+
+            }
+
+            @Override
+            public void onRepeatModeChanged(int repeatMode) {
+
+            }
+
+            @Override
+            public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+            }
+
+            @Override
+            public void onPlayerError(ExoPlaybackException error) {
+                Toast.makeText(NotificationActionService.this, error.toString(), Toast
+                        .LENGTH_SHORT)
+                        .show();
+                Log.i("error", error.toString());
+            }
+
+            @Override
+            public void onPositionDiscontinuity(int reason) {
+                if(reason== 2 || reason==0)
+                {
+                    int index=player.getCurrentPeriodIndex();
+                    ListSong song=MainActivity.totalSongList.get(index);
+                    updateUi(song);
+                }
+            }
+
+            @Override
+            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+            }
+
+            @Override
+            public void onSeekProcessed() {
+
+            }
+        });
+        playerView.setShowShuffleButton(true);
+        playerView.setRepeatToggleModes(1);
+
+        int length=MainActivity.totalSongList.size();
+        MediaSource[] mediaSources = new MediaSource[length];
+        String finalUrl;
+//        finalUrl = "file:///" + song.getPath();
+//        Uri uri = Uri.parse(finalUrl);
+
+        DataSource.Factory dataSourceFactory =
+                new DefaultDataSourceFactory(
+                        this, Util.getUserAgent(this, "Music Player"), null);
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+
+        for(int i=0;i<length;i++) {
+            finalUrl = "file:///" + MainActivity.totalSongList.get(i).getPath();
+            Uri uri = Uri.parse(finalUrl);
+
+            mediaSources[i] =
+                    new ExtractorMediaSource(
+                            uri, dataSourceFactory, extractorsFactory, null, null);
+        }
+
+        MediaSource mediaSource = mediaSources.length == 1 ? mediaSources[0]
+                : new ConcatenatingMediaSource(mediaSources);
+        player.prepare(mediaSource, true, true);
+        player.setPlayWhenReady(state);
+        int index=player.getCurrentPeriodIndex();
+        ListSong songs=MainActivity.totalSongList.get(index);
+        updateUi(songs);
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//            NotificationUtil.notifyUser(this, song);
+//        }
+//
+//
+//        if (MainActivity.recentPlayed == null) {
+//            MainActivity.recentPlayed = new RecentPlayed();
+//        }
+//        MainActivity.recentPlayed.addSong(song);
+//        String json = gson.toJson(MainActivity.recentPlayed);
+//        MainActivity.prefsEditor.putString("recentPlayed", json);
+//        MainActivity.prefsEditor.apply();
+//        RecentFragment.recycleAdapter.notifyDataSetChanged();
+    }
+
+
+
+    private void updateUi(ListSong song)
+    {
+        songName.setText(song.getSongName());
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
         Uri songCover = ContentUris.withAppendedId(sArtworkUri,
@@ -144,92 +303,11 @@ public class NotificationActionService extends Service {
                                 (slideCoverImage);
                     }
                 });
-        setPauseButton();
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (player != null)
-                    changeIcon();
-            }
-        });
-        playWhenReady = state;
-        if (player == null) {
-            player = ExoPlayerFactory.newSimpleInstance(
-                    new DefaultRenderersFactory(this),
-                    new DefaultTrackSelector(), new DefaultLoadControl());
-            playerView = view.findViewById(R.id.player_background_view);
-            playerView.setPlayer(player);
-            player.setPlayWhenReady(playWhenReady);
-            player.seekTo(currentWindow, playbackPosition);
-            playerView.setControllerHideOnTouch(false);
-        }
-        player.addListener(new ExoPlayer.EventListener() {
-            @Override
-            public void onTimelineChanged(Timeline timeline, Object manifest) {
-
-            }
-
-            @Override
-            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray
-                    trackSelections) {
-//                initializePlayer(song,view);
-            }
-
-            @Override
-            public void onLoadingChanged(boolean isLoading) {
-
-            }
-
-            @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                if (playWhenReady) {
-                    setPauseButton();
-                } else {
-                    setPlayButton();
-                }
-            }
-
-            @Override
-            public void onPlayerError(ExoPlaybackException error) {
-                Toast.makeText(NotificationActionService.this, error.toString(), Toast
-                        .LENGTH_SHORT)
-                        .show();
-                Log.i("error", error.toString());
-            }
-
-            @Override
-            public void onPositionDiscontinuity() {
-
-            }
-
-            @Override
-            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
-            }
-        });
-
-
-        String finalUrl;
-        finalUrl = "file:///" + song.getPath();
-        Uri uri = Uri.parse(finalUrl);
-
-        DataSource.Factory dataSourceFactory =
-                new DefaultDataSourceFactory(
-                        this, Util.getUserAgent(this, "Music Player"), null);
-        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-
-        MediaSource mediaSource =
-                new ExtractorMediaSource(
-                        uri, dataSourceFactory, extractorsFactory, null, null);
-
-        player.prepare(mediaSource, true, true);
-        player.setPlayWhenReady(state);
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             NotificationUtil.notifyUser(this, song);
         }
-
 
         if (MainActivity.recentPlayed == null) {
             MainActivity.recentPlayed = new RecentPlayed();
@@ -240,6 +318,8 @@ public class NotificationActionService extends Service {
         MainActivity.prefsEditor.apply();
         RecentFragment.recycleAdapter.notifyDataSetChanged();
     }
+
+
 
 
 //    public void initializePlayer(Song song, View view) {
@@ -452,6 +532,7 @@ public class NotificationActionService extends Service {
     @Override
     public void onDestroy() {
         // Tell the user we stopped.
+        releasePlayer();
         stopSelf();
 //        Toast.makeText(this, "stopped", Toast.LENGTH_SHORT).show();
 

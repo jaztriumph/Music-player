@@ -5,10 +5,12 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,6 +33,7 @@ import com.example.jayanth.musicplayer.models.Playlist;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.List;
 
 import static com.example.jayanth.musicplayer.activities.MainActivity.allPlaylists;
@@ -85,7 +88,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
             }
         });
 
-
+        int px=(int) (50 * Resources.getSystem().getDisplayMetrics().density);
 //        Bitmap bm = BitmapFactory.decodeFile(song.getArt());
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
@@ -93,22 +96,43 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         Uri uri = ContentUris.withAppendedId(sArtworkUri,
                 song.getAlbumId());
 //        if(isImageFile(uri.toString()))
-        Picasso.with(mContext).load(uri).resize(1000, 1000).centerCrop().into(holder
-                        .listSideImage,
-                new Callback() {
-                    @Override
-                    public void onSuccess() {
+        File file = new File(uri.getPath());
+        if (file.exists()) {
+            //Do something
+            Log.i("path","exists");
+            Picasso.with(mContext).load(uri).resize(200,200).centerCrop().into(holder
+                            .listSideImage,
+                    new Callback() {
+                        @Override
+                        public void onSuccess() {
 
 
-                    }
+                        }
 
-                    @Override
-                    public void onError() {
+                        @Override
+                        public void onError() {
 
-                        Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder
-                                .listSideImage);
-                    }
-                });
+                            Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder
+                                    .listSideImage);
+                        }
+                    });
+        }
+//        Picasso.with(mContext).load(uri).resize(200,200).centerCrop().into(holder
+//                        .listSideImage,
+//                new Callback() {
+//                    @Override
+//                    public void onSuccess() {
+//
+//
+//                    }
+//
+//                    @Override
+//                    public void onError() {
+//
+//                        Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder
+//                                .listSideImage);
+//                    }
+//                });
 //        holder.listSideImage.setImageBitmap(getAlbumart(song.getId()));
 
 

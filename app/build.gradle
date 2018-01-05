@@ -36,8 +36,9 @@ dependencies {
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     compile 'com.squareup.okhttp:okhttp:2.5.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.google.android.exoplayer:exoplayer:r2.4.0'
+    compile 'com.google.android.exoplayer:exoplayer:2.6.1'
     compile 'com.sothree.slidinguppanel:library:3.4.0'
+//    compile 'com.google.android.exoplayer2.ui'
 
 
 }

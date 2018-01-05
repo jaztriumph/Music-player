@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             // cast its IBinder to a concrete class and directly access it.
             mBoundService = ((NotificationActionService.LocalBinder) service).getService();
             if (recentPlayed.getRecentPlayed().size() > 0) {
-                mBoundService.initializePlayer(recentPlayed.getRecentPlayed().get(0), view,false);
+                mBoundService.initializePlayer(recentPlayed.getRecentPlayed().get(0), view, false);
             }
             // Tell the user about this for our demo.
 //            Toast.makeText(MainActivity.this,"started",
@@ -307,10 +307,9 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        Toast.makeText(this, "destroy", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "destroy", Toast.LENGTH_SHORT).show();
         doUnbindService();
     }
-
 
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -393,17 +392,37 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             }
 
             @Override
+            public void onRepeatModeChanged(int repeatMode) {
+
+            }
+
+            @Override
+            public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+            }
+
+            @Override
             public void onPlayerError(ExoPlaybackException error) {
 
             }
 
             @Override
+            public void onPositionDiscontinuity(int reason) {
+
+            }
+
+
             public void onPositionDiscontinuity() {
 
             }
 
             @Override
             public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+            }
+
+            @Override
+            public void onSeekProcessed() {
 
             }
         });
