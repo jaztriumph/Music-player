@@ -22,9 +22,10 @@ import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
-        .ListRecycleAdapterOnClickHandler, PlaylistRecycleAdapter
-        .PlaylistRecycleAdapterOnClickHandler {
+import java.util.List;
+
+public class PlaylistsFragment extends Fragment implements PlaylistRecycleAdapter
+        .PlaylistRecycleAdapterOnClickHandler, ListRecycleAdapter.ListRecycleAdapterOnClickHandler {
 
     private SlidePanelCommunicator comm;
     RecyclerView recyclerView;
@@ -86,9 +87,14 @@ public class PlaylistsFragment extends Fragment implements ListRecycleAdapter
         PlaylistRecyclerView = getView().findViewById(R.id.playlist_recycler_view);
     }
 
+//    @Override
+//    public void onClick(List<ListSong> song) {
+//        comm.onClick(song);
+//    }
+
     @Override
-    public void onClick(ListSong song) {
-        comm.onClick(song);
+    public void onClick(int position) {
+
     }
 
     @Override

@@ -84,11 +84,18 @@ public class RecentFragment extends Fragment implements ListRecycleAdapter
 //        });
     }
 
-
     @Override
-    public void onClick(ListSong song) {
-        comm.onClick(song);
+    public void onClick(int position) {
+
     }
 
+//
+//    @Override
+//    public void onClick(List<ListSong> song) {
+//        List<ListSong> oneSong = new ArrayList<>();
+//        oneSong.add(song.get(0));
+//        comm.onClick(oneSong);
+//    }
+//
 
 }

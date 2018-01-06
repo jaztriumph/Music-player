@@ -82,12 +82,13 @@ public class NotificationUtil {
                 .setContent(smallNotificationView)
                 .setContentIntent(pendingIntent(context))
                 .setAutoCancel(false)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true);
 
         //setting priority high for android versions less than jellybean
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+//            notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH );
         }
 
         if (notificationManager != null) {

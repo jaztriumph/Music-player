@@ -19,7 +19,8 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.models.AllPlaylists;
-import com.squareup.picasso.Callback;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -79,23 +80,19 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
         Uri uri = ContentUris.withAppendedId(sArtworkUri,
                 albumId);
 
-
-        Picasso.with(mContext).load(uri).resize(1000, 1000).centerCrop().into(holder
-                        .playlistThumbnail,
-                new Callback() {
-                    @Override
-                    public void onSuccess() {
+//        Picasso.with(mContext).load(uri).fit().centerCrop()
+//                .error(R.drawable.music_player_svg)
+//                .into(holder.playlistThumbnail);
 
 
-                    }
+        ImageLoader.getInstance().cancelDisplayTask(holder.playlistThumbnail);
+        holder.playlistThumbnail.setImageResource(R.drawable.music_player_svg);
+        DisplayImageOptions imageOptions = new DisplayImageOptions.Builder()
+                .showImageOnFail(R.drawable.music_player_svg).build();
+        ImageLoader.getInstance().displayImage(uri.toString(), holder.playlistThumbnail, imageOptions);
 
-                    @Override
-                    public void onError() {
 
-                        Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder
-                                .playlistThumbnail);
-                    }
-                });
+
     }
 
     @Override

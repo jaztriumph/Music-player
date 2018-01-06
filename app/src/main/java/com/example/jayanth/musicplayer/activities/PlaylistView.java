@@ -18,6 +18,8 @@ import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
 
+import java.util.List;
+
 public class PlaylistView extends AppCompatActivity implements ListRecycleAdapter
         .ListRecycleAdapterOnClickHandler {
 
@@ -98,9 +100,14 @@ public class PlaylistView extends AppCompatActivity implements ListRecycleAdapte
         doUnbindService();
     }
 
-    @Override
-    public void onClick(ListSong song) {
+//    @Override
+//    public void onClick(List<ListSong> song) {
 //        MainActivity ac=(MainActivity)getApplicationContext();
 //        mBoundService.initializePlayer(song, MainActivity.vw);
+//    }
+
+    @Override
+    public void onClick(int position) {
+
     }
 }

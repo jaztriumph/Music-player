@@ -6,6 +6,8 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,14 +28,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
-import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Playlist;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.util.List;
 
 import static com.example.jayanth.musicplayer.activities.MainActivity.allPlaylists;
@@ -51,7 +56,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     public static Dialog dialog;
 
     public interface ListRecycleAdapterOnClickHandler {
-        void onClick(ListSong song);
+        void onClick(int position);
     }
 
 
@@ -71,12 +76,13 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, int position) {
+    public void onBindViewHolder(final MyViewHolder holder, final int position) {
         final ListSong song = songList.get(position);
+//        final List<ListSong> playlist = songList.subList(position, songList.size());
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mOnClickHandler.onClick(song);
+                mOnClickHandler.onClick(position);
             }
         });
         holder.listArtist.setText(song.getArtist());
@@ -88,7 +94,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
             }
         });
 
-        int px=(int) (50 * Resources.getSystem().getDisplayMetrics().density);
+        int px = (int) (50 * Resources.getSystem().getDisplayMetrics().density);
 //        Bitmap bm = BitmapFactory.decodeFile(song.getArt());
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
@@ -96,27 +102,25 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
         Uri uri = ContentUris.withAppendedId(sArtworkUri,
                 song.getAlbumId());
 //        if(isImageFile(uri.toString()))
-        File file = new File(uri.getPath());
-        if (file.exists()) {
-            //Do something
-            Log.i("path","exists");
-            Picasso.with(mContext).load(uri).resize(200,200).centerCrop().into(holder
-                            .listSideImage,
-                    new Callback() {
-                        @Override
-                        public void onSuccess() {
+//        File file = new File(uri.getPath());
+//        if (file.exists()) {
+//            //Do something
+//            Log.i("path", "exists");
+//        String filePath = uri.toString();
+//        Cursor cursor = mContext.getContentResolver().query(uri, new String[]{
+//                android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
+//        if (cursor != null) {
+//            cursor.moveToFirst();
+//            filePath = cursor.getString(0);
+//            Log.d("Uri", filePath);
+//            cursor.close();
+//        }
+        ImageLoader.getInstance().cancelDisplayTask(holder.listSideImage);
+        holder.listSideImage.setImageResource(R.drawable.music_player_svg);
+        DisplayImageOptions imageOptions = new DisplayImageOptions.Builder()
+                .showImageOnFail(R.drawable.music_player_svg).build();
+        ImageLoader.getInstance().displayImage(uri.toString(), holder.listSideImage, imageOptions);
 
-
-                        }
-
-                        @Override
-                        public void onError() {
-
-                            Picasso.with(mContext).load(R.drawable.music_player_svg).into(holder
-                                    .listSideImage);
-                        }
-                    });
-        }
 //        Picasso.with(mContext).load(uri).resize(200,200).centerCrop().into(holder
 //                        .listSideImage,
 //                new Callback() {
@@ -275,9 +279,8 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
             newPlaylistValues.put(MediaStore.Audio.Playlists.Members.PLAYLIST_ID,
                     playlist_id);
 
-            Uri returnSongUri =resolver.insert(returnUri, newPlaylistValues);
-            if(returnSongUri==null)
-            {
+            Uri returnSongUri = resolver.insert(returnUri, newPlaylistValues);
+            if (returnSongUri == null) {
                 Toast.makeText(mContext, "failed", Toast.LENGTH_SHORT).show();
             }
             //updating the loaded allPlaylists and user view

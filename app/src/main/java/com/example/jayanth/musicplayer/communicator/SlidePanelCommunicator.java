@@ -1,13 +1,14 @@
 package com.example.jayanth.musicplayer.communicator;
 
 import com.example.jayanth.musicplayer.models.ListSong;
-import com.example.jayanth.musicplayer.models.Song;
+
+import java.util.List;
 
 /**
  * Created by jayanth on 18/12/17.
  */
 
 public interface SlidePanelCommunicator {
-//    public void onClick(Song song);
-    public void onClick(ListSong song);
+
+    void onClick(int position);
 }

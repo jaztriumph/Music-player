@@ -10,7 +10,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -28,14 +27,14 @@ import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
+import com.google.android.exoplayer2.source.DynamicConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -49,6 +48,8 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.gson.Gson;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 import static com.example.jayanth.musicplayer.utils.NotificationUtil.bigNotificationView;
 import static com.example.jayanth.musicplayer.utils.NotificationUtil.notification;
@@ -122,7 +123,8 @@ public class NotificationActionService extends Service {
     }
 
 
-    public void initializePlayer(ListSong song, View view, boolean state) {
+    public void initializePlayer(final List<ListSong> songList, View view, int position, boolean
+            state) {
         mView = view;
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
@@ -169,7 +171,7 @@ public class NotificationActionService extends Service {
             playerView.setControllerHideOnTouch(false);
 
         }
-        player.addListener(new ExoPlayer.EventListener() {
+        player.addListener(new Player.EventListener() {
             @Override
             public void onTimelineChanged(Timeline timeline, Object manifest) {
 
@@ -216,10 +218,9 @@ public class NotificationActionService extends Service {
 
             @Override
             public void onPositionDiscontinuity(int reason) {
-                if(reason== 2 || reason==0)
-                {
-                    int index=player.getCurrentPeriodIndex();
-                    ListSong song=MainActivity.totalSongList.get(index);
+                if (reason == 2 || reason == 0) {
+                    int index = player.getCurrentWindowIndex();
+                    ListSong song = songList.get(index);
                     updateUi(song);
                 }
             }
@@ -237,32 +238,23 @@ public class NotificationActionService extends Service {
         playerView.setShowShuffleButton(true);
         playerView.setRepeatToggleModes(1);
 
-        int length=MainActivity.totalSongList.size();
-        MediaSource[] mediaSources = new MediaSource[length];
         String finalUrl;
-//        finalUrl = "file:///" + song.getPath();
-//        Uri uri = Uri.parse(finalUrl);
-
         DataSource.Factory dataSourceFactory =
                 new DefaultDataSourceFactory(
                         this, Util.getUserAgent(this, "Music Player"), null);
-        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
 
-        for(int i=0;i<length;i++) {
-            finalUrl = "file:///" + MainActivity.totalSongList.get(i).getPath();
+        DynamicConcatenatingMediaSource mediaSource = new DynamicConcatenatingMediaSource();
+        for (ListSong song : songList) {
+            finalUrl = "file:///" + song.getPath();
             Uri uri = Uri.parse(finalUrl);
-
-            mediaSources[i] =
-                    new ExtractorMediaSource(
-                            uri, dataSourceFactory, extractorsFactory, null, null);
+            MediaSource mediaSource1 = new ExtractorMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(uri);
+            mediaSource.addMediaSource(mediaSource1);
         }
-
-        MediaSource mediaSource = mediaSources.length == 1 ? mediaSources[0]
-                : new ConcatenatingMediaSource(mediaSources);
         player.prepare(mediaSource, true, true);
         player.setPlayWhenReady(state);
-        int index=player.getCurrentPeriodIndex();
-        ListSong songs=MainActivity.totalSongList.get(index);
+        player.seekTo(position, 0);
+        ListSong songs = songList.get(position);
         updateUi(songs);
 //
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -281,9 +273,7 @@ public class NotificationActionService extends Service {
     }
 
 
-
-    private void updateUi(ListSong song)
-    {
+    private void updateUi(ListSong song) {
         songName.setText(song.getSongName());
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
@@ -318,8 +308,6 @@ public class NotificationActionService extends Service {
         MainActivity.prefsEditor.apply();
         RecentFragment.recycleAdapter.notifyDataSetChanged();
     }
-
-
 
 
 //    public void initializePlayer(Song song, View view) {

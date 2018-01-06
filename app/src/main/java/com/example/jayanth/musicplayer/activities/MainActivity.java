@@ -7,11 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -54,12 +57,12 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.gson.Gson;
+import com.marcoscg.easypermissions.EasyPermissions;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity implements SlidePanelCommunicator {
@@ -75,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private ImageButton imageButton;
     private int currentWindow;
     private boolean playWhenReady = true;
-    public static List<ListSong> totalSongList;
+    public ArrayList<ListSong> totalSongList;
     public static AllPlaylists allPlaylists;
     public static ViewPagerAdapter adapter;
     public static RecentPlayed recentPlayed;
@@ -94,7 +97,8 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             // cast its IBinder to a concrete class and directly access it.
             mBoundService = ((NotificationActionService.LocalBinder) service).getService();
             if (recentPlayed.getRecentPlayed().size() > 0) {
-                mBoundService.initializePlayer(recentPlayed.getRecentPlayed().get(0), view, false);
+                mBoundService.initializePlayer(recentPlayed.getRecentPlayed(),
+                        view, 0, false);
             }
             // Tell the user about this for our demo.
 //            Toast.makeText(MainActivity.this,"started",
@@ -111,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
                     Toast.LENGTH_SHORT).show();
         }
     };
+    int requestCode = 1002;
 
 
     @Override
@@ -133,9 +138,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         recentPlayed = new RecentPlayed();
         totalSongList = new ArrayList<>();
         allPlaylists = new AllPlaylists();
-        loadSongList();
-        loadAllPlaylist();
-        loadRecentPlayed();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         slideCoverImage = findViewById(R.id.slide_cover);
@@ -145,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
         viewPager = findViewById(R.id.viewpager);
         viewPager.setOffscreenPageLimit(2);
-        setupViewPager(viewPager);
 
         tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -173,7 +174,43 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
             }
         });
+        checkPerm();
 
+    }
+
+    private void checkPerm() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            String[] permissions = {EasyPermissions.WRITE_EXTERNAL_STORAGE};
+            EasyPermissions.requestPermissions(this, permissions, requestCode);
+        } else {
+            loadPlayer();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (this.requestCode == requestCode) {
+            for (int i = 0; i < permissions.length; i++) {
+                String permission = permissions[i];
+                int grantResult = grantResults[i];
+                if (permission.equals(EasyPermissions.WRITE_EXTERNAL_STORAGE)) {
+                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(MainActivity.this, "WRITE_EXTERNAL_STORAGE Granted", Toast
+                                .LENGTH_LONG).show();
+                        loadPlayer();
+                    }
+                }
+            }
+        }
+    }
+
+    private void loadPlayer() {
+        loadSongList();
+        loadAllPlaylist();
+        loadRecentPlayed();
+        setupViewPager(viewPager);
     }
 
     private void loadRecentPlayed() {
@@ -314,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
 //        adapter.addFrag(new AllSongsFragment(), "stream Songs");
-        adapter.addFrag(new SongsFragment(), "Songs");
+        adapter.addFrag(SongsFragment.newInstance(totalSongList), "Songs");
         adapter.addFrag(new PlaylistsFragment(), "Playlist");
         adapter.addFrag(new RecentFragment(), "Recent");
         viewPager.setAdapter(adapter);
@@ -337,8 +374,8 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 //    }
 
     @Override
-    public void onClick(ListSong song) {
-        mBoundService.initializePlayer(song, view, true);
+    public void onClick(int position) {
+        mBoundService.initializePlayer(totalSongList, view, position, true);
     }
 
     @Override
