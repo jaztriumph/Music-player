@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,7 +40,7 @@ import com.example.jayanth.musicplayer.models.AllPlaylists;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Playlist;
 import com.example.jayanth.musicplayer.models.RecentPlayed;
-import com.example.jayanth.musicplayer.services.NotificationActionService;
+import com.example.jayanth.musicplayer.services.MusicActionService;
 import com.example.jayanth.musicplayer.utils.Constants;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     public SharedPreferences mPrefs;
 
     private Gson gson;
-    private NotificationActionService mBoundService;
+    private MusicActionService mBoundService;
     private boolean mIsBound;
     private SlidingUpPanelLayout slidingUpPanelLayout;
     View view;
@@ -99,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             // interact with the service.  Because we have bound to a explicit
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
-            mBoundService = ((NotificationActionService.LocalBinder) service).getService();
+            mBoundService = ((MusicActionService.LocalBinder) service).getService();
             if (recentPlayed.getRecentPlayed().size() > 0 && !mBoundService.initialised) {
                 mBoundService.initializePlayer(recentPlayed.getRecentPlayed(),
                         view, 0, false);
@@ -147,12 +148,22 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             slidingUpPanelLayout = findViewById(R.id.sliding_layout);
             playerView = findViewById(R.id.player_background_view);
             playlistButton = findViewById(R.id.playlist_btn);
-
+            LinearLayout slideLayout=findViewById(R.id.slide_layout);
 
             setSupportActionBar(toolbar);
             toolbar.setTitle("Music player");
             viewPager.setOffscreenPageLimit(2);
             tabLayout.setupWithViewPager(viewPager);
+            slideLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(slidingUpPanelLayout.getPanelState()==SlidingUpPanelLayout.PanelState.COLLAPSED)
+                    slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                    else
+                        slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+                }
+            });
             slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
 
                 @Override
@@ -350,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         // we know will be running in our own process (and thus won't be
         // supporting component replacement by other applications).
         bindService(new Intent(MainActivity.this,
-                NotificationActionService.class), mConnection, Context.BIND_AUTO_CREATE);
+                MusicActionService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
     }
 
@@ -365,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     @Override
     protected void onStart() {
         super.onStart();
-//        startService(new Intent(this,NotificationActionService.class));
+        startService(new Intent(this,MusicActionService.class));
 
         doBindService();
     }

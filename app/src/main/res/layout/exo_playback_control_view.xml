@@ -37,9 +37,9 @@
             style="@style/ExoMediaButton.Rewind"
             android:layout_weight="1" />
 
-        <!--<ImageButton-->
-        <!--android:id="@id/exo_repeat_toggle"-->
-        <!--style="@style/ExoMediaButton" />-->
+        <ImageButton
+        android:id="@id/exo_repeat_toggle"
+        style="@style/ExoMediaButton" />
 
         <ImageButton
             android:id="@id/exo_play"

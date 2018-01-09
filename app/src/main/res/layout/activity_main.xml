@@ -2,8 +2,6 @@
 
 <com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:sothree="http://schemas.android.com/apk/res-auto"
-
-
     android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,32 +16,32 @@
         android:id="@+id/dragView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
         android:clickable="true"
-        android:focusable="false"
+
         android:orientation="vertical">
 
-        <include layout="@layout/slide_panel_layout" />
 
-
-        <LinearLayout xmlns:app="http://schemas.android.com/tools"
+        <FrameLayout xmlns:app="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/windowBackground">
+            android:clickable="true">
 
-            <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
+            <!--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+            <!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent">-->
+
+            <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+                android:id="@+id/player_background_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                app:resize_mode="fixed_height"
+                sothree:show_timeout="0" />
 
-                <com.google.android.exoplayer2.ui.SimpleExoPlayerView
-                    android:id="@+id/player_background_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    app:resize_mode="fixed_height"
-                    sothree:show_timeout="0" />
-            </FrameLayout>
-        </LinearLayout>
+            <include layout="@layout/slide_panel_layout" />
+
+            <!--</FrameLayout>-->
+        </FrameLayout>
     </LinearLayout>
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

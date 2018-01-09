@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#ed2954</color>
-    <color name="colorPrimaryDark">#590a10</color>
+    <!--<color name="colorPrimary">#ed2954</color>-->
+    <color name="colorPrimary">#474749</color>
+    <!--<color name="colorPrimaryDark">#590a10</color>-->
+    <color name="colorPrimaryDark">#3b3b3d</color>
     <color name="colorAccent">#bbbcbc</color>
     <color name="colorAccent1">#848484</color>
     <color name="textColorWhite">#FFFFFF</color>
     <color name="windowBackground">#FFFFFF</color>
+    <!--<color name="windowBackground">#252323</color>-->
     <color name="navigationBarColor">#000000</color>
     <color name="album_title">#4c4c4c</color>
-    <color name="text_color_primary">#c8ed2954</color>
+    <!--<color name="text_color_primary">#c8ed2954</color>-->
+    <color name="text_color_primary">#c8535051</color>
     <color name="text_color">#4e4444</color>
     <color name="slide_color">#EEEEEE</color>
 </resources>

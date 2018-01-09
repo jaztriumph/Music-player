@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
-import com.example.jayanth.musicplayer.services.NotificationActionService;
+import com.example.jayanth.musicplayer.services.MusicActionService;
 
 public class PlaylistView extends AppCompatActivity implements ListRecycleAdapter
         .ListRecycleAdapterOnClickHandler {
@@ -34,7 +34,7 @@ public class PlaylistView extends AppCompatActivity implements ListRecycleAdapte
         recyclerView.setAdapter(adapter);
     }
 
-    private NotificationActionService mBoundService;
+    private MusicActionService mBoundService;
     private boolean mIsBound;
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -44,7 +44,7 @@ public class PlaylistView extends AppCompatActivity implements ListRecycleAdapte
             // interact with the service.  Because we have bound to a explicit
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
-            mBoundService = ((NotificationActionService.LocalBinder) service).getService();
+            mBoundService = ((MusicActionService.LocalBinder) service).getService();
 
             // Tell the user about this for our demo.
 //            Toast.makeText(MainActivity.this,"started",
@@ -68,7 +68,7 @@ public class PlaylistView extends AppCompatActivity implements ListRecycleAdapte
         // we know will be running in our own process (and thus won't be
         // supporting component replacement by other applications).
         bindService(new Intent(PlaylistView.this,
-                NotificationActionService.class), mConnection, Context.BIND_AUTO_CREATE);
+                MusicActionService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
     }
 
@@ -83,7 +83,7 @@ public class PlaylistView extends AppCompatActivity implements ListRecycleAdapte
     @Override
     protected void onStart() {
         super.onStart();
-//        startService(new Intent(this,NotificationActionService.class));
+//        startService(new Intent(this,MusicActionService.class));
 
         doBindService();
     }

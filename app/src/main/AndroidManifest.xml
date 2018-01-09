@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+
     <application
         android:name=".MusicPlayerApp"
         android:allowBackup="true"
@@ -25,7 +26,7 @@
         </activity>
 
         <service
-            android:name=".services.NotificationActionService"
+            android:name=".services.MusicActionService"
             android:exported="false"
             android:stopWithTask="false" />
 
