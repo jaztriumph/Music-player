@@ -103,7 +103,10 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             if (recentPlayed.getRecentPlayed().size() > 0 && !mBoundService.initialised) {
                 mBoundService.initializePlayer(recentPlayed.getRecentPlayed(),
                         view, 0, false);
+//                mBoundService.startForeground(recentPlayed.getRecentPlayed().get(0));
             }
+            if(mBoundService.initialised)
+                mBoundService.updateMainActivityUi(view);
             // Tell the user about this for our demo.
 //            Toast.makeText(MainActivity.this,"started",
 //                    Toast.LENGTH_SHORT).show();

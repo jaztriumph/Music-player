@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
@@ -52,7 +53,8 @@ import static com.example.jayanth.musicplayer.utils.NotificationUtil.NOTIFY_USER
  * Created by jayanth on 21/12/17.
  */
 
-public class NotificationActionService extends Service {
+public class NotificationActionService extends Service implements AudioManager
+        .OnAudioFocusChangeListener {
 
     public SimpleExoPlayer player;
     private long playbackPosition;
@@ -70,6 +72,15 @@ public class NotificationActionService extends Service {
     public boolean initialised;
 
     Gson gson;
+
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+        if (focusChange <= 0) {
+            setPlayButton();
+        } else {
+            setPauseButton();
+        }
+    }
 
     public class LocalBinder extends Binder {
         public NotificationActionService getService() {
@@ -90,6 +101,7 @@ public class NotificationActionService extends Service {
     public void onCreate() {
 //        serviceRunning = true;
         notificationUtil = new NotificationUtil();
+
 //        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 //        mNM.cancelAll();
         gson = new Gson();
@@ -152,6 +164,7 @@ public class NotificationActionService extends Service {
                             .show();
                     Log.e("playerlength", String.valueOf(songList.size()));
                     int index = player.getCurrentPeriodIndex();
+                    currentWindow = index;
                     ListSong song = songList.get(index);
                     updateUi(song);
                 }
@@ -170,6 +183,13 @@ public class NotificationActionService extends Service {
 //        startForeground(NOTIFY_USER_ID, notificationUtil.notification);
 
     }
+//
+//    public void startForeground(ListSong song) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//            notificationUtil.notifyUser(this, song);
+//            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
+//        }
+//    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -183,9 +203,15 @@ public class NotificationActionService extends Service {
         if (action != null && player != null) {
             if (action.equals(NotificationUtil.ACTION_PLAY_PAUSE))
                 changeIcon();
-            if (action.equals(NotificationUtil.ACTION_CLOSE))
+            if (action.equals(NotificationUtil.ACTION_PLAY_NEXT))
+                playNext();
+            if (action.equals(NotificationUtil.ACTION_PLAY_PREVIOUS))
+                playPrevious();
+
+            if (action.equals(NotificationUtil.ACTION_CLOSE)) {
                 stopForeground(true);
-            notificationUtil.notificationManager.cancelAll();
+                notificationUtil.notificationManager.cancelAll();
+            }
         }
 //        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
 
@@ -196,8 +222,9 @@ public class NotificationActionService extends Service {
 
     public void initializePlayer(final ArrayList<ListSong> songList, View view, int position,
                                  boolean state) {
-        initialised=true;
+        initialised = true;
         this.songList = songList;
+        currentWindow = position;
         mView = view;
         playWhenReady = state;
         imageButton = view.findViewById(R.id.play_btn);
@@ -216,7 +243,6 @@ public class NotificationActionService extends Service {
 
 
         playerView.setPlayer(player);
-        player.seekTo(currentWindow, playbackPosition);
         player.setRepeatMode(Player.REPEAT_MODE_ALL);
         playerView.setControllerHideOnTouch(false);
         playerView.setShowShuffleButton(true);
@@ -241,9 +267,8 @@ public class NotificationActionService extends Service {
         player.seekTo(position, 0);
         player.setPlayWhenReady(playWhenReady);
 
-        ListSong songs = songList.get(position);
-        updateUi(songs);
-
+        ListSong song = songList.get(position);
+        updateUi(song);
     }
 
 
@@ -259,188 +284,74 @@ public class NotificationActionService extends Service {
                 .showImageOnFail(R.drawable.music_player_svg).build();
         ImageLoader.getInstance().displayImage(songCover.toString(), slideCoverImage, imageOptions);
 
-//        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into
-//                (slideCoverImage, new Callback() {
-//                    @Override
-//                    public void onSuccess() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError() {
-//                        Picasso.with(context).load(R.drawable.music_player_svg).into
-//                                (slideCoverImage);
-//                    }
-//                });
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             notificationUtil.notifyUser(this, song);
             startForeground(NOTIFY_USER_ID, notificationUtil.notification);
 
-
         }
 
-
         getBus().post(song);
+    }
+
+
+    public void updateMainActivityUi(View view) {
+        mView = view;
+//        playWhenReady = state;
+        imageButton = view.findViewById(R.id.play_btn);
+        songName = view.findViewById(R.id.song_name);
+        slideCoverImage = view.findViewById(R.id.slide_cover);
+        playerView = view.findViewById(R.id.player_background_view);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (player != null)
+                    changeIcon();
+            }
+        });
+
+        if (playWhenReady)
+            setPauseButton();
+        else
+            setPlayButton();
+
+
+        playerView.setPlayer(player);
+        player.setPlayWhenReady(playWhenReady);
+        playerView.setControllerAutoShow(true);
+        player.setRepeatMode(Player.REPEAT_MODE_ALL);
+        playerView.setControllerHideOnTouch(false);
+        playerView.setShowShuffleButton(true);
+        ListSong song = songList.get(currentWindow);
+        updateUi(song);
 
     }
 
 
-//    public void initializePlayer(Song song, View view) {
-////        String source = "file:///storage/sdcard0/Sounds/Music/02---Yo-Yo-Honey-Singh
-/// ---Angreji" +
-////                "-Beat-Ft.-Gippy.mp3";
-////        Context mContext = getApplicationContext();
-////        if (mExoPlayer == null) {
-////            mExoPlayer =
-////                    ExoPlayerFactory.newSimpleInstance(
-////                            new DefaultRenderersFactory(this), new DefaultTrackSelector(), new
-////                                    DefaultLoadControl());
-////        }
-////        mExoPlayer.setPlayWhenReady(true);
-////        DataSource.Factory dataSourceFactory =
-////                new DefaultDataSourceFactory(
-////                        mContext, Util.getUserAgent(mContext, "Music Player"), null);
-////        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-////        // The MediaSource represents the media to be played.
-////        MediaSource mediaSource =
-////                new ExtractorMediaSource(
-////                        Uri.parse(source), dataSourceFactory, extractorsFactory, null, null);
-////        mExoPlayer.prepare(mediaSource, true, true);
-//
-//
-//
-//        currentSong = song;
-//        mView = view;
-//        imageButton = view.findViewById(R.id.play_btn);
-//        songName = view.findViewById(R.id.song_name);
-//        slideCoverImage = view.findViewById(R.id.slide_cover);
-//        songName.setText(song.getSong());
-//        Picasso.with(this).load(song.getCoverImage()).resize(1000,1000).centerCrop().into
-//                (slideCoverImage);
-//        playWhenReady = true;
-//        if (player != null)
-//            player.setPlayWhenReady(true);
-//        setPauseButton();
-//        imageButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (player != null)
-//                    changeIcon();
-//            }
-//        });
-//        if (player == null) {
-//            player = ExoPlayerFactory.newSimpleInstance(
-//                    new DefaultRenderersFactory(this),
-//                    new DefaultTrackSelector(), new DefaultLoadControl());
-//
-//
-//            playerView = view.findViewById(R.id.player_background_view);
-//            playerView.setPlayer(player);
-//            player.setPlayWhenReady(playWhenReady);
-//            player.seekTo(currentWindow, playbackPosition);
-//        }
-//
-//        player.addListener(new ExoPlayer.EventListener() {
-//            @Override
-//            public void onTimelineChanged(Timeline timeline, Object manifest) {
-//
-//            }
-//
-//            @Override
-//            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray
-//                    trackSelections) {
-//
-//            }
-//
-//            @Override
-//            public void onLoadingChanged(boolean isLoading) {
-//
-//            }
-//
-//            @Override
-//            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-//                if (playWhenReady) {
-//                    setPauseButton();
-//                } else {
-//                    setPlayButton();
-//                }
-//            }
-//
-//            @Override
-//            public void onPlayerError(ExoPlaybackException error) {
-//                Toast.makeText(NotificationActionService.this, error.toString(), Toast
-// .LENGTH_SHORT)
-//                        .show();
-//                Log.i("error", error.toString());
-//            }
-//
-//            @Override
-//            public void onPositionDiscontinuity() {
-//
-//            }
-//
-//            @Override
-//            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-//
-//            }
-//        });
-//
-//        String finalUrl;
-//        try {
-//            finalUrl = new RedirectLocation().execute(song.getUrl()).get();
-//            Uri uri = Uri.parse(finalUrl);
-//            MediaSource mediaSource = buildMediaSource(uri);
-//            player.prepare(mediaSource, true, true);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        }
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//            NotificationUtil.notifyUser(this, song);
-//        }
-//    }
+    private void playNext() {
+        currentWindow = (currentWindow + 1) % songList.size();
+        player.seekTo(currentWindow, 0);
+        ListSong song = songList.get(currentWindow);
+        updateUi(song);
+    }
 
+    private void playPrevious() {
+        currentWindow = (currentWindow + songList.size() - 1) % songList.size();
+        player.seekTo(currentWindow, 0);
+        ListSong song = songList.get(currentWindow);
+        updateUi(song);
+    }
 
-//    private MediaSource buildMediaSource(Uri uri) {
-//
-//        return new ExtractorMediaSource(uri,
-//                new DefaultHttpDataSourceFactory("exoplayer-codelab"),
-//                new DefaultExtractorsFactory(), null, null);
-//    }
 
     public void changeIcon() {
         if (playWhenReady) {
             playWhenReady = false;
             setPlayButton();
             player.setPlayWhenReady(false);
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
-//                        .play_button_notification_svg);
-//                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
-//                        .play_button_notification_svg);
-//                notificationBuilder.setContent(smallNotificationView);
-//                notification.bigContentView = bigNotificationView;
-//                notificationManager.notify(987, notification);
-//            }
-
         } else {
             playWhenReady = true;
             setPauseButton();
             player.setPlayWhenReady(true);
-//
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
-//                        .pause_button_notification_svg);
-//                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
-//                        .pause_button_notification_svg);
-//                notificationBuilder.setContent(smallNotificationView);
-//                notification.bigContentView = bigNotificationView;
-//                notificationManager.notify(987, notification);
-//            }
         }
 
     }
@@ -457,7 +368,7 @@ public class NotificationActionService extends Service {
 
 
     public void setPauseButton() {
-
+        playWhenReady = true;
         imageButton.setImageResource(R.drawable
                 .pause_button_svg);
         try {
@@ -472,7 +383,8 @@ public class NotificationActionService extends Service {
                 notificationUtil.notificationBuilder.setContent(notificationUtil
                         .smallNotificationView);
                 notificationUtil.notification.bigContentView = notificationUtil.bigNotificationView;
-                notificationUtil.notificationManager.notify(987, notificationUtil.notification);
+                notificationUtil.notificationManager.notify(NOTIFY_USER_ID, notificationUtil
+                        .notification);
             }
         } catch (Exception e) {
             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
@@ -481,6 +393,7 @@ public class NotificationActionService extends Service {
     }
 
     public void setPlayButton() {
+        playWhenReady = false;
         imageButton.setImageResource(R.drawable.play_button_svg);
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -494,7 +407,8 @@ public class NotificationActionService extends Service {
                 notificationUtil.notificationBuilder.setContent(notificationUtil
                         .smallNotificationView);
                 notificationUtil.notification.bigContentView = notificationUtil.bigNotificationView;
-                notificationUtil.notificationManager.notify(987, notificationUtil.notification);
+                notificationUtil.notificationManager.notify(NOTIFY_USER_ID, notificationUtil
+                        .notification);
             }
         } catch (Exception e) {
             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
