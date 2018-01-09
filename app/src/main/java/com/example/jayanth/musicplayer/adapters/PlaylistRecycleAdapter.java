@@ -18,10 +18,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
-import com.example.jayanth.musicplayer.models.AllPlaylists;
+import com.example.jayanth.musicplayer.models.Playlist;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 /**
  * Created by jayanth on 28/12/17.
@@ -31,14 +32,14 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
         .PlaylistViewHolder> {
 
     private Context mContext;
-    private AllPlaylists allPlaylists;
+    private ArrayList<Playlist> allPlaylists;
     private PlaylistRecycleAdapterOnClickHandler mOnclickHandler;
 
     public interface PlaylistRecycleAdapterOnClickHandler {
-        public void onPlaylistClick(long id);
+        void onPlaylistClick(long id);
     }
 
-    public PlaylistRecycleAdapter(Context mContext, AllPlaylists allPlaylists,
+    public PlaylistRecycleAdapter(Context mContext, ArrayList<Playlist> allPlaylists,
                                   PlaylistRecycleAdapterOnClickHandler mOnClickHandler) {
         this.mContext = mContext;
         this.allPlaylists = allPlaylists;
@@ -56,9 +57,9 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
     @Override
     public void onBindViewHolder(final PlaylistViewHolder holder, int position) {
         final int index = position;
-        final long playlist_id = allPlaylists.getAllPlaylists().get(index).getPlaylistId();
-        final String playlist_Name = allPlaylists.getAllPlaylists().get(index).getPlaylistName();
-        long albumId = allPlaylists.getAllPlaylists().get(index).
+        final long playlist_id = allPlaylists.get(index).getPlaylistId();
+        final String playlist_Name = allPlaylists.get(index).getPlaylistName();
+        long albumId = allPlaylists.get(index).
                 getSongList().get(0).getAlbumId();
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,15 +90,15 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
         holder.playlistThumbnail.setImageResource(R.drawable.music_player_svg);
         DisplayImageOptions imageOptions = new DisplayImageOptions.Builder()
                 .showImageOnFail(R.drawable.music_player_svg).build();
-        ImageLoader.getInstance().displayImage(uri.toString(), holder.playlistThumbnail, imageOptions);
-
+        ImageLoader.getInstance().displayImage(uri.toString(), holder.playlistThumbnail,
+                imageOptions);
 
 
     }
 
     @Override
     public int getItemCount() {
-        return allPlaylists.getAllPlaylists().size();
+        return allPlaylists.size();
     }
 
     public class PlaylistViewHolder extends RecyclerView.ViewHolder implements View
@@ -154,7 +155,7 @@ public class PlaylistRecycleAdapter extends RecyclerView.Adapter<PlaylistRecycle
         resolver.delete(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, where, whereVal);
         Toast toast = Toast.makeText(mContext, playlistName + " Deleted", Toast.LENGTH_SHORT);
         toast.show();
-        allPlaylists.getAllPlaylists().remove(index);
+        allPlaylists.remove(index);
         this.notifyDataSetChanged();
     }
 

@@ -1,6 +1,5 @@
 package com.example.jayanth.musicplayer.services;
 
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Context;
@@ -18,10 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
-import com.example.jayanth.musicplayer.activities.MainActivity;
-import com.example.jayanth.musicplayer.fragments.RecentFragment;
 import com.example.jayanth.musicplayer.models.ListSong;
-import com.example.jayanth.musicplayer.models.RecentPlayed;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -32,8 +28,6 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.DynamicConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -46,16 +40,13 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.google.gson.Gson;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
-import java.util.List;
+import java.util.ArrayList;
 
-import static com.example.jayanth.musicplayer.utils.NotificationUtil.bigNotificationView;
-import static com.example.jayanth.musicplayer.utils.NotificationUtil.notification;
-import static com.example.jayanth.musicplayer.utils.NotificationUtil.notificationBuilder;
-import static com.example.jayanth.musicplayer.utils.NotificationUtil.notificationManager;
-import static com.example.jayanth.musicplayer.utils.NotificationUtil.smallNotificationView;
+import static com.example.jayanth.musicplayer.MusicPlayerApp.getBus;
+import static com.example.jayanth.musicplayer.utils.NotificationUtil.NOTIFY_USER_ID;
 
 /**
  * Created by jayanth on 21/12/17.
@@ -67,7 +58,7 @@ public class NotificationActionService extends Service {
     private long playbackPosition;
     private SimpleExoPlayerView playerView;
     private int currentWindow;
-    private boolean playWhenReady = true;
+    public boolean playWhenReady = true;
     private View mView;
     private ImageButton imageButton;
     private TextView songName;
@@ -75,6 +66,8 @@ public class NotificationActionService extends Service {
     private Song currentSong;
     private SimpleExoPlayer mExoPlayer;
     private PlaybackControlView controls;
+    private ArrayList<ListSong> songList;
+    public boolean initialised;
 
     Gson gson;
 
@@ -85,7 +78,7 @@ public class NotificationActionService extends Service {
     }
 
     private final IBinder mBinder = new LocalBinder();
-    private NotificationManager mNM;
+    private NotificationUtil notificationUtil;
 
     @Nullable
     @Override
@@ -95,81 +88,15 @@ public class NotificationActionService extends Service {
 
     @Override
     public void onCreate() {
-        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNM.cancelAll();
+//        serviceRunning = true;
+        notificationUtil = new NotificationUtil();
+//        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//        mNM.cancelAll();
         gson = new Gson();
-
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        String action = null;
-        if (intent != null) {
-            action = intent.getAction();
-        }
-//        else{
-//            Toast.makeText(this, "intent is null", Toast.LENGTH_SHORT).show();
-//        }
-        if (action != null && player != null) {
-            if (action.equals("playPause"))
-                changeIcon();
-            if (action.equals("close"))
-                notificationManager.cancelAll();
-        }
-//        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
-
-        Log.i("LocalService", "Received start id " + startId + ": " + intent);
-        return START_NOT_STICKY;
-    }
-
-
-    public void initializePlayer(final List<ListSong> songList, View view, int position, boolean
-            state) {
-        mView = view;
-        imageButton = view.findViewById(R.id.play_btn);
-        songName = view.findViewById(R.id.song_name);
-        slideCoverImage = view.findViewById(R.id.slide_cover);
-//        songName.setText(song.getSongName());
-        setPauseButton();
-
-
-//        final Uri sArtworkUri = Uri
-//                .parse("content://media/external/audio/albumart");
-//        Uri songCover = ContentUris.withAppendedId(sArtworkUri,
-//                song.getAlbumId());
-//        final Context context = this;
-//        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into
-//                (slideCoverImage, new Callback() {
-//                    @Override
-//                    public void onSuccess() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError() {
-//                        Picasso.with(context).load(R.drawable.music_player_svg).into
-//                                (slideCoverImage);
-//                    }
-//                });
-//        setPauseButton();
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (player != null)
-                    changeIcon();
-            }
-        });
-        playWhenReady = state;
         if (player == null) {
             player = ExoPlayerFactory.newSimpleInstance(
                     new DefaultRenderersFactory(this),
                     new DefaultTrackSelector(), new DefaultLoadControl());
-            playerView = view.findViewById(R.id.player_background_view);
-            playerView.setPlayer(player);
-            player.setPlayWhenReady(playWhenReady);
-            player.seekTo(currentWindow, playbackPosition);
-            playerView.setControllerHideOnTouch(false);
-
         }
         player.addListener(new Player.EventListener() {
             @Override
@@ -219,7 +146,12 @@ public class NotificationActionService extends Service {
             @Override
             public void onPositionDiscontinuity(int reason) {
                 if (reason == 2 || reason == 0) {
-                    int index = player.getCurrentWindowIndex();
+                    Toast.makeText(NotificationActionService.this, String.valueOf(songList.size()),
+                            Toast
+                                    .LENGTH_SHORT)
+                            .show();
+                    Log.e("playerlength", String.valueOf(songList.size()));
+                    int index = player.getCurrentPeriodIndex();
                     ListSong song = songList.get(index);
                     updateUi(song);
                 }
@@ -235,8 +167,61 @@ public class NotificationActionService extends Service {
 
             }
         });
+//        startForeground(NOTIFY_USER_ID, notificationUtil.notification);
+
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        String action = null;
+        if (intent != null) {
+            action = intent.getAction();
+        }
+//        else{
+//            Toast.makeText(this, "intent is null", Toast.LENGTH_SHORT).show();
+//        }
+        if (action != null && player != null) {
+            if (action.equals(NotificationUtil.ACTION_PLAY_PAUSE))
+                changeIcon();
+            if (action.equals(NotificationUtil.ACTION_CLOSE))
+                stopForeground(true);
+            notificationUtil.notificationManager.cancelAll();
+        }
+//        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
+
+        Log.i("LocalService", "Received start id " + startId + ": " + intent);
+        return START_STICKY;
+    }
+
+
+    public void initializePlayer(final ArrayList<ListSong> songList, View view, int position,
+                                 boolean state) {
+        initialised=true;
+        this.songList = songList;
+        mView = view;
+        playWhenReady = state;
+        imageButton = view.findViewById(R.id.play_btn);
+        songName = view.findViewById(R.id.song_name);
+        slideCoverImage = view.findViewById(R.id.slide_cover);
+        playerView = view.findViewById(R.id.player_background_view);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (player != null)
+                    changeIcon();
+            }
+        });
+        if (playWhenReady)
+            setPauseButton();
+
+
+        playerView.setPlayer(player);
+        player.seekTo(currentWindow, playbackPosition);
+        player.setRepeatMode(Player.REPEAT_MODE_ALL);
+        playerView.setControllerHideOnTouch(false);
         playerView.setShowShuffleButton(true);
-        playerView.setRepeatToggleModes(1);
+        playerView.setRepeatToggleModes(Player.REPEAT_MODE_ALL);
+
 
         String finalUrl;
         DataSource.Factory dataSourceFactory =
@@ -244,6 +229,7 @@ public class NotificationActionService extends Service {
                         this, Util.getUserAgent(this, "Music Player"), null);
 
         DynamicConcatenatingMediaSource mediaSource = new DynamicConcatenatingMediaSource();
+
         for (ListSong song : songList) {
             finalUrl = "file:///" + song.getPath();
             Uri uri = Uri.parse(finalUrl);
@@ -252,61 +238,52 @@ public class NotificationActionService extends Service {
             mediaSource.addMediaSource(mediaSource1);
         }
         player.prepare(mediaSource, true, true);
-        player.setPlayWhenReady(state);
         player.seekTo(position, 0);
+        player.setPlayWhenReady(playWhenReady);
+
         ListSong songs = songList.get(position);
         updateUi(songs);
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//            NotificationUtil.notifyUser(this, song);
-//        }
-//
-//
-//        if (MainActivity.recentPlayed == null) {
-//            MainActivity.recentPlayed = new RecentPlayed();
-//        }
-//        MainActivity.recentPlayed.addSong(song);
-//        String json = gson.toJson(MainActivity.recentPlayed);
-//        MainActivity.prefsEditor.putString("recentPlayed", json);
-//        MainActivity.prefsEditor.apply();
-//        RecentFragment.recycleAdapter.notifyDataSetChanged();
+
     }
 
 
     private void updateUi(ListSong song) {
         songName.setText(song.getSongName());
+        final Context context = this;
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
         Uri songCover = ContentUris.withAppendedId(sArtworkUri,
                 song.getAlbumId());
-        final Context context = this;
-        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into
-                (slideCoverImage, new Callback() {
-                    @Override
-                    public void onSuccess() {
 
-                    }
+        DisplayImageOptions imageOptions = new DisplayImageOptions.Builder()
+                .showImageOnFail(R.drawable.music_player_svg).build();
+        ImageLoader.getInstance().displayImage(songCover.toString(), slideCoverImage, imageOptions);
 
-                    @Override
-                    public void onError() {
-                        Picasso.with(context).load(R.drawable.music_player_svg).into
-                                (slideCoverImage);
-                    }
-                });
+//        Picasso.with(this).load(songCover).resize(1000, 1000).centerCrop().into
+//                (slideCoverImage, new Callback() {
+//                    @Override
+//                    public void onSuccess() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError() {
+//                        Picasso.with(context).load(R.drawable.music_player_svg).into
+//                                (slideCoverImage);
+//                    }
+//                });
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            NotificationUtil.notifyUser(this, song);
+            notificationUtil.notifyUser(this, song);
+            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
+
+
         }
 
-        if (MainActivity.recentPlayed == null) {
-            MainActivity.recentPlayed = new RecentPlayed();
-        }
-        MainActivity.recentPlayed.addSong(song);
-        String json = gson.toJson(MainActivity.recentPlayed);
-        MainActivity.prefsEditor.putString("recentPlayed", json);
-        MainActivity.prefsEditor.apply();
-        RecentFragment.recycleAdapter.notifyDataSetChanged();
+
+        getBus().post(song);
+
     }
 
 
@@ -485,13 +462,17 @@ public class NotificationActionService extends Service {
                 .pause_button_svg);
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+                notificationUtil.bigNotificationView.setImageViewResource(R.id
+                        .big_play_pause_btn, R.drawable
                         .pause_button_notification_svg);
-                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+                notificationUtil.smallNotificationView.setImageViewResource(R.id
+                        .small_play_pause_btn, R
+                        .drawable
                         .pause_button_notification_svg);
-                notificationBuilder.setContent(smallNotificationView);
-                notification.bigContentView = bigNotificationView;
-                notificationManager.notify(987, notification);
+                notificationUtil.notificationBuilder.setContent(notificationUtil
+                        .smallNotificationView);
+                notificationUtil.notification.bigContentView = notificationUtil.bigNotificationView;
+                notificationUtil.notificationManager.notify(987, notificationUtil.notification);
             }
         } catch (Exception e) {
             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
@@ -503,28 +484,31 @@ public class NotificationActionService extends Service {
         imageButton.setImageResource(R.drawable.play_button_svg);
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                bigNotificationView.setImageViewResource(R.id.big_play_pause_btn, R.drawable
+                notificationUtil.bigNotificationView.setImageViewResource(R.id
+                        .big_play_pause_btn, R.drawable
                         .play_button_notification_svg);
-                smallNotificationView.setImageViewResource(R.id.small_play_pause_btn, R.drawable
+                notificationUtil.smallNotificationView.setImageViewResource(R.id
+                        .small_play_pause_btn, R
+                        .drawable
                         .play_button_notification_svg);
-                notificationBuilder.setContent(smallNotificationView);
-                notification.bigContentView = bigNotificationView;
-                notificationManager.notify(987, notification);
+                notificationUtil.notificationBuilder.setContent(notificationUtil
+                        .smallNotificationView);
+                notificationUtil.notification.bigContentView = notificationUtil.bigNotificationView;
+                notificationUtil.notificationManager.notify(987, notificationUtil.notification);
             }
         } catch (Exception e) {
             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
         }
     }
 
-
-    @Override
-    public void onDestroy() {
-        // Tell the user we stopped.
-        releasePlayer();
-        stopSelf();
-//        Toast.makeText(this, "stopped", Toast.LENGTH_SHORT).show();
-
-    }
+//    @Override
+//    public void onDestroy() {
+//        // Tell the user we stopped.
+//        releasePlayer();
+//        stopSelf();
+////        Toast.makeText(this, "stopped", Toast.LENGTH_SHORT).show();
+//
+//    }
 
 
 }

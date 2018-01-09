@@ -9,16 +9,11 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
-import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
-import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
-
-import java.util.List;
 
 public class PlaylistView extends AppCompatActivity implements ListRecycleAdapter
         .ListRecycleAdapterOnClickHandler {
@@ -32,8 +27,8 @@ public class PlaylistView extends AppCompatActivity implements ListRecycleAdapte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_view);
         recyclerView = findViewById(R.id.playlist_recycler_view);
-        adapter = new ListRecycleAdapter(this, MainActivity.allPlaylists.getAllPlaylists().get(0)
-                .getSongList(), this);
+//        adapter = new ListRecycleAdapter(this, MainActivity.allPlaylists.getAllPlaylists().get(0)
+//                .getSongList(), this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);

@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.adapters.ViewPagerAdapter;
-import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
+import com.example.jayanth.musicplayer.communicator.FragmentCommunicator;
 import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.fragments.RecentFragment;
 import com.example.jayanth.musicplayer.fragments.SongsFragment;
@@ -40,6 +40,7 @@ import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Playlist;
 import com.example.jayanth.musicplayer.models.RecentPlayed;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
+import com.example.jayanth.musicplayer.utils.Constants;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -65,7 +66,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity implements SlidePanelCommunicator {
+public class MainActivity extends AppCompatActivity implements FragmentCommunicator {
 
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -75,19 +76,22 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     private ImageView slideCoverImage;
     private TextView songName;
     private long playbackPosition;
-    private ImageButton imageButton;
+    private ImageButton playPauseButton;
+    public ImageButton playlistButton;
     private int currentWindow;
     private boolean playWhenReady = true;
     public ArrayList<ListSong> totalSongList;
-    public static AllPlaylists allPlaylists;
-    public static ViewPagerAdapter adapter;
-    public static RecentPlayed recentPlayed;
-    public static SharedPreferences mPrefs;
-    public static SharedPreferences.Editor prefsEditor;
+    public AllPlaylists allPlaylists;
+    public ViewPagerAdapter adapter;
+    public RecentPlayed recentPlayed;
+    public SharedPreferences mPrefs;
+
     private Gson gson;
     private NotificationActionService mBoundService;
     private boolean mIsBound;
+    private SlidingUpPanelLayout slidingUpPanelLayout;
     View view;
+
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // This is called when the connection with the service has been
@@ -96,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
             mBoundService = ((NotificationActionService.LocalBinder) service).getService();
-            if (recentPlayed.getRecentPlayed().size() > 0) {
+            if (recentPlayed.getRecentPlayed().size() > 0 && !mBoundService.initialised) {
                 mBoundService.initializePlayer(recentPlayed.getRecentPlayed(),
                         view, 0, false);
             }
@@ -122,59 +126,76 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
-//        vw=this.findViewById(android.R.id.content).getRootView();
         setContentView(R.layout.activity_main);
-//        startService(new Intent(this,NotificationActionService.class));
-
-        view = this.findViewById(android.R.id.content).getRootView();
-        NotificationManager notificationManager = (NotificationManager) this.getSystemService
-                (Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null) {
-            notificationManager.cancelAll();
-        }
-        mPrefs = getPreferences(MODE_PRIVATE);
-        prefsEditor = mPrefs.edit();
-        gson = new Gson();
-        recentPlayed = new RecentPlayed();
-        totalSongList = new ArrayList<>();
-        allPlaylists = new AllPlaylists();
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        slideCoverImage = findViewById(R.id.slide_cover);
-        songName = findViewById(R.id.song_name);
-        imageButton = findViewById(R.id.play_btn);
-        toolbar.setTitle("Music player");
-
-        viewPager = findViewById(R.id.viewpager);
-        viewPager.setOffscreenPageLimit(2);
-
-        tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-        playerView = findViewById(R.id.player_background_view);
-        SlidingUpPanelLayout slidingUpPanelLayout = findViewById(R.id.sliding_layout);
-        slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-
+        if(mBoundService==null) {
+            NotificationManager notificationManager = (NotificationManager) this.getSystemService
+                    (Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.cancelAll();
             }
 
-            @Override
-            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState
-                    previousState, SlidingUpPanelLayout.PanelState newState) {
+            view = this.findViewById(android.R.id.content).getRootView();
+            toolbar = findViewById(R.id.toolbar);
+            slideCoverImage = findViewById(R.id.slide_cover);
+            songName = findViewById(R.id.song_name);
+            playPauseButton = findViewById(R.id.play_btn);
+            viewPager = findViewById(R.id.viewpager);
+            tabLayout = findViewById(R.id.tabs);
+            slidingUpPanelLayout = findViewById(R.id.sliding_layout);
+            playerView = findViewById(R.id.player_background_view);
+            playlistButton = findViewById(R.id.playlist_btn);
 
-                //  Toast.makeText(getApplicationContext(),newState.name().toString(),Toast
-                // .LENGTH_SHORT).show();
-                if (newState.name().equalsIgnoreCase("Collapsed")) {
 
-                    //action when collapsed
+            setSupportActionBar(toolbar);
+            toolbar.setTitle("Music player");
+            viewPager.setOffscreenPageLimit(2);
+            tabLayout.setupWithViewPager(viewPager);
+            slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
 
-                } else if (newState.name().equalsIgnoreCase("Expanded")) {
+                @Override
+                public void onPanelSlide(View panel, float slideOffset) {
 
                 }
 
-            }
-        });
-        checkPerm();
+                @Override
+                public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState
+                        previousState, SlidingUpPanelLayout.PanelState newState) {
+
+                    //  Toast.makeText(getApplicationContext(),newState.name().toString(),Toast
+                    // .LENGTH_SHORT).show();
+                    if (newState.name().equalsIgnoreCase("Collapsed")) {
+
+                        //action when collapsed
+//                    if(mBoundService.playWhenReady)
+//                    {
+//                        mBoundService.setPauseButton();
+//                    }else{
+//                        mBoundService.setPlayButton();
+//                    }
+                        playlistButton.setVisibility(View.INVISIBLE);
+                        playPauseButton.setVisibility(View.VISIBLE);
+
+
+                    } else if (newState.name().equalsIgnoreCase("Expanded")) {
+
+                        playlistButton.setVisibility(View.VISIBLE);
+                        playPauseButton.setVisibility(View.INVISIBLE);
+//                    playPauseButton.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable
+//                            .pause_button_svg));
+                    }
+
+                }
+            });
+
+            mPrefs = getSharedPreferences(Constants.SHARED_PREFERENCES_KEY, MODE_PRIVATE);
+            gson = new Gson();
+            recentPlayed = new RecentPlayed();
+            totalSongList = new ArrayList<>();
+            allPlaylists = new AllPlaylists();
+
+
+            checkPerm();
+        }
 
     }
 
@@ -188,8 +209,8 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
+            grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (this.requestCode == requestCode) {
             for (int i = 0; i < permissions.length; i++) {
@@ -213,6 +234,7 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
         setupViewPager(viewPager);
     }
 
+
     private void loadRecentPlayed() {
         try {
 
@@ -221,6 +243,10 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
         } catch (Exception e) {
             Log.e("preferences", e.toString());
+        }
+        if(recentPlayed==null)
+        {
+            recentPlayed = new RecentPlayed();
         }
     }
 
@@ -345,15 +371,17 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
     protected void onDestroy() {
         super.onDestroy();
         Toast.makeText(this, "destroy", Toast.LENGTH_SHORT).show();
-        doUnbindService();
+//        doUnbindService();
     }
 
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
 //        adapter.addFrag(new AllSongsFragment(), "stream Songs");
-        adapter.addFrag(SongsFragment.newInstance(totalSongList), "Songs");
-        adapter.addFrag(new PlaylistsFragment(), "Playlist");
-        adapter.addFrag(new RecentFragment(), "Recent");
+        adapter.addFrag(SongsFragment.newInstance(totalSongList, allPlaylists.getAllPlaylists()), "Songs");
+        adapter.addFrag(PlaylistsFragment.newInstance(allPlaylists.getAllPlaylists()), "Playlist");
+        adapter.addFrag(RecentFragment.newInstance(recentPlayed.getRecentPlayed(), allPlaylists
+                        .getAllPlaylists()),
+                "Recent");
         viewPager.setAdapter(adapter);
     }
 
@@ -373,10 +401,6 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 ////
 //    }
 
-    @Override
-    public void onClick(int position) {
-        mBoundService.initializePlayer(totalSongList, view, position, true);
-    }
 
     @Override
     public void onBackPressed() {
@@ -526,24 +550,37 @@ public class MainActivity extends AppCompatActivity implements SlidePanelCommuni
 
     public void changeIcon() {
         if (playWhenReady) {
-            playWhenReady = false;
-            player.setPlayWhenReady(false);
             setPlayButton();
         } else {
-            playWhenReady = true;
-            player.setPlayWhenReady(true);
             setPauseButton();
         }
 
     }
 
     public void setPauseButton() {
-        imageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
+        playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
                 .pause_button_svg));
     }
 
     public void setPlayButton() {
-        imageButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
+        playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable
                 .play_button_svg));
+    }
+
+    @Override
+    public void onClickSongs(int position) {
+        mBoundService.initializePlayer(totalSongList, view, position, true);
+    }
+
+    @Override
+    public void onClickPlaylistSongs(int position, int index) {
+        mBoundService.initializePlayer(allPlaylists.getAllPlaylists().get(index).getSongList(),
+                view,
+                position, true);
+    }
+
+    @Override
+    public void onClickRecentSongs(int position) {
+        mBoundService.initializePlayer(recentPlayed.getRecentPlayed(), view, position, true);
     }
 }

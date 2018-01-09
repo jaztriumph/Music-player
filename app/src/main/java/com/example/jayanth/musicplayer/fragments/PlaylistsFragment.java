@@ -13,46 +13,67 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
-import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
 import com.example.jayanth.musicplayer.adapters.PlaylistRecycleAdapter;
-import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
-import com.example.jayanth.musicplayer.models.ListSong;
+import com.example.jayanth.musicplayer.communicator.FragmentCommunicator;
+import com.example.jayanth.musicplayer.models.Playlist;
+import com.example.jayanth.musicplayer.utils.Constants;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
-import java.util.List;
+import java.util.ArrayList;
+
+import static com.example.jayanth.musicplayer.MusicPlayerApp.getBus;
 
 public class PlaylistsFragment extends Fragment implements PlaylistRecycleAdapter
         .PlaylistRecycleAdapterOnClickHandler, ListRecycleAdapter.ListRecycleAdapterOnClickHandler {
 
-    private SlidePanelCommunicator comm;
-    RecyclerView recyclerView;
-    public static PlaylistRecycleAdapter adapter;
+    public Bus bus;
 
-    RecyclerView PlaylistRecyclerView;
-    ListRecycleAdapter PlaylistAdapter;
+    private FragmentCommunicator comm;
+    RecyclerView recyclerView;
+    public PlaylistRecycleAdapter adapter;
+
+    RecyclerView playlistRecyclerView;
+    ListRecycleAdapter playlistAdapter;
     RelativeLayout allPlaylistLayout;
     RelativeLayout playlistLayout;
     ImageButton homePlaylistBtn;
     TextView playlistNameText;
+    ArrayList<Playlist> allPlaylists;
+    long lastClickedPlaylist;
     SlidingUpPanelLayout slidingUpPanelLayout;
 
     public PlaylistsFragment() {
         // Required empty public constructor
     }
 
+    public static PlaylistsFragment newInstance(ArrayList<Playlist> allPlaylists) {
+        PlaylistsFragment playlistsFragment = new PlaylistsFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList(Constants.PLAYLIST_KEY, allPlaylists);
+        playlistsFragment.setArguments(bundle);
+        return playlistsFragment;
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        comm = (SlidePanelCommunicator) context;
+        comm = (FragmentCommunicator) context;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (getArguments() != null) {
+            allPlaylists = getArguments().getParcelableArrayList(Constants.PLAYLIST_KEY);
+        }
+        bus = getBus();
+        bus.register(this);
     }
 
     @Override
@@ -80,11 +101,11 @@ public class PlaylistsFragment extends Fragment implements PlaylistRecycleAdapte
         });
 
         recyclerView = getView().findViewById(R.id.all_playlist_recycler_view);
-        adapter = new PlaylistRecycleAdapter(getContext(), MainActivity.allPlaylists, this);
+        adapter = new PlaylistRecycleAdapter(getContext(), allPlaylists, this);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-        PlaylistRecyclerView = getView().findViewById(R.id.playlist_recycler_view);
+        playlistRecyclerView = getView().findViewById(R.id.playlist_recycler_view);
     }
 
 //    @Override
@@ -92,23 +113,35 @@ public class PlaylistsFragment extends Fragment implements PlaylistRecycleAdapte
 //        comm.onClick(song);
 //    }
 
-    @Override
-    public void onClick(int position) {
+    @Subscribe
+    public void updatedDataset(String s) {
+        if (s.equals(Constants.UPDATE_PLAYlIST_KEY)) {
+            if (adapter != null)
+                adapter.notifyDataSetChanged();
+
+            if (playlistAdapter != null)
+                playlistAdapter.notifyDataSetChanged();
+            Toast.makeText(getContext(), "bus called", Toast.LENGTH_SHORT).show();
+        }
 
     }
 
     @Override
+    public void onClick(int position) {
+        comm.onClickPlaylistSongs(position, (int) lastClickedPlaylist);
+    }
+
+    @Override
     public void onPlaylistClick(long id) {
-        PlaylistAdapter = new ListRecycleAdapter(getContext(), MainActivity.allPlaylists
-                .getAllPlaylists()
+        lastClickedPlaylist = id;
+        playlistAdapter = new ListRecycleAdapter(getContext(), allPlaylists
                 .get((int) id)
-                .getSongList(), this);
-        RecyclerView.LayoutManager PlaylistLayoutManager = new LinearLayoutManager(getContext());
-        PlaylistRecyclerView.setLayoutManager(PlaylistLayoutManager);
-        PlaylistRecyclerView.setAdapter(PlaylistAdapter);
+                .getSongList(), allPlaylists, this);
+        RecyclerView.LayoutManager playlistLayoutManager = new LinearLayoutManager(getContext());
+        playlistRecyclerView.setLayoutManager(playlistLayoutManager);
+        playlistRecyclerView.setAdapter(playlistAdapter);
 //        Toast.makeText(getContext(), String.valueOf(id), Toast.LENGTH_SHORT).show();
-        playlistNameText.setText(MainActivity.allPlaylists
-                .getAllPlaylists()
+        playlistNameText.setText(allPlaylists
                 .get((int) id).getPlaylistName());
         allPlaylistLayout.setVisibility(View.INVISIBLE);
         playlistLayout.setVisibility(View.VISIBLE);

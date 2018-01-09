@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.adapters.RecycleAdapter;
-import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
+import com.example.jayanth.musicplayer.communicator.FragmentCommunicator;
 import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.networking.ApiClient;
 import com.example.jayanth.musicplayer.networking.ApiInterface;
@@ -34,7 +34,7 @@ public class AllSongsFragment extends Fragment implements RecycleAdapter
     private RecycleAdapter adapter;
     private List<Song> songList;
     private ApiInterface apiInterface;
-    private SlidePanelCommunicator comm;
+    private FragmentCommunicator comm;
 
     public AllSongsFragment() {
         // Required empty public constructor
@@ -65,7 +65,7 @@ public class AllSongsFragment extends Fragment implements RecycleAdapter
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        comm = (SlidePanelCommunicator) context;
+        comm = (FragmentCommunicator) context;
     }
 
     @Override

@@ -8,7 +8,9 @@ import java.util.List;
  * Created by jayanth on 18/12/17.
  */
 
-public interface SlidePanelCommunicator {
+public interface FragmentCommunicator {
 
-    void onClick(int position);
+    void onClickSongs(int position);
+    void onClickPlaylistSongs(int position,int playlistIndex);
+    void onClickRecentSongs(int position);
 }

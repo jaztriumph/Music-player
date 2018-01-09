@@ -18,6 +18,8 @@ import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.services.NotificationActionService;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -28,22 +30,25 @@ public class NotificationUtil {
     //This pending intent id is used to uniquely reference the pending intent
 
     private static final int NOTIFY_USER_PENDING_INTENT_ID = 123;
-    private static final int NOTIFY_USER_ID = 987;
+    public static final int NOTIFY_USER_ID = 987;
 
     //This notification channel id is used to link notifications to this channel
 
     private static final String NOTIFY_USER_CHANNEL_ID = "user_notify_channel";
+    public static final String ACTION_PLAY_PAUSE = "play_pause";
+    public static final String ACTION_CLOSE = "close";
 
-    public static RemoteViews bigNotificationView;
-    public static RemoteViews smallNotificationView;
 
-    public static NotificationManager notificationManager;
+    public RemoteViews bigNotificationView;
+    public RemoteViews smallNotificationView;
 
-    public static NotificationCompat.Builder notificationBuilder;
-    public static Notification notification;
+    public NotificationManager notificationManager;
+
+    public NotificationCompat.Builder notificationBuilder;
+    public Notification notification;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    public static void notifyUser(Context context, ListSong song) {
+    public void notifyUser(Context context, ListSong song) {
         bigNotificationView = new RemoteViews(context.getPackageName(),
                 R.layout.expand_custom_notification);
         bigNotificationView.setOnClickPendingIntent(R.id.big_play_pause_btn, playPause(context));
@@ -88,7 +93,7 @@ public class NotificationUtil {
         //setting priority high for android versions less than jellybean
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-//            notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH );
+            notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH );
         }
 
         if (notificationManager != null) {
@@ -98,9 +103,21 @@ public class NotificationUtil {
 
             Uri songCover = ContentUris.withAppendedId(sArtworkUri,
                     song.getAlbumId());
+
+//            DisplayImageOptions imageOptions = new DisplayImageOptions.Builder()
+//                    .showImageOnFail(R.drawable.music_player_svg).build();
+//            ImageLoader.getInstance().displayImage(songCover.toString(), R.id
+//                    .expand_cover_image,bigNotificationView, imageOptions);
+
+
             Picasso.with(context).load(songCover).resize(1000, 1000).into
                     (bigNotificationView, R.id
-                            .cover_image, NOTIFY_USER_ID, notification);
+                            .expand_cover_image, NOTIFY_USER_ID, notification);
+
+            Picasso.with(context).load(songCover).resize(1000, 1000).centerCrop().into
+                    (smallNotificationView, R.id
+                            .small_cover_image, NOTIFY_USER_ID, notification);
+
 //            final RemoteViews contentView = notification.contentView;
 //            final int iconId = android.R.id.icon;
 //            Picasso.with(context).load(song.getCoverImage()).resize(150, 150).into
@@ -117,15 +134,35 @@ public class NotificationUtil {
         Intent startActivityIntent = new Intent(context, MainActivity.class);
         return PendingIntent.getActivity(context, NOTIFY_USER_PENDING_INTENT_ID,
                 startActivityIntent, PendingIntent
-                        .FLAG_UPDATE_CURRENT
+                        .FLAG_NO_CREATE
         );
     }
 
 
+    private static PendingIntent playNext(Context context) {
+
+        Intent playPauseIntent = new Intent(context, NotificationActionService.class);
+        playPauseIntent.setAction(ACTION_PLAY_PAUSE);
+        PendingIntent playPausePendingIntent = PendingIntent.getService(context, 100,
+                playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
+//                .pause_button_svg,"",pausePlayPendingIntent );
+        return playPausePendingIntent;
+    }
+    private static PendingIntent playPrevious(Context context) {
+
+        Intent playPauseIntent = new Intent(context, NotificationActionService.class);
+        playPauseIntent.setAction(ACTION_PLAY_PAUSE);
+        PendingIntent playPausePendingIntent = PendingIntent.getService(context, 100,
+                playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
+//                .pause_button_svg,"",pausePlayPendingIntent );
+        return playPausePendingIntent;
+    }
     private static PendingIntent playPause(Context context) {
 
         Intent playPauseIntent = new Intent(context, NotificationActionService.class);
-        playPauseIntent.setAction("playPause");
+        playPauseIntent.setAction(ACTION_PLAY_PAUSE);
         PendingIntent playPausePendingIntent = PendingIntent.getService(context, 100,
                 playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 //        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable
@@ -136,7 +173,7 @@ public class NotificationUtil {
     private static PendingIntent close(Context context) {
 
         Intent playPauseIntent = new Intent(context, NotificationActionService.class);
-        playPauseIntent.setAction("close");
+        playPauseIntent.setAction(ACTION_CLOSE);
         PendingIntent playPausePendingIntent = PendingIntent.getService(context, 100,
                 playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 //        NotificationCompat.Action pausePlayAction = new NotificationCompat.Action(R.drawable

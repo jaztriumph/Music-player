@@ -6,13 +6,10 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
-import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,20 +25,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
-import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.models.Playlist;
+import com.example.jayanth.musicplayer.utils.Constants;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.jayanth.musicplayer.activities.MainActivity.allPlaylists;
+import static com.example.jayanth.musicplayer.MusicPlayerApp.getBus;
 
 /**
  * Created by jayanth on 23/12/17.
@@ -50,21 +43,22 @@ import static com.example.jayanth.musicplayer.activities.MainActivity.allPlaylis
 public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.MyViewHolder> {
     private Context mContext;
     private List<ListSong> songList;
+    private ArrayList<Playlist> allPlaylists;
     private ListRecycleAdapterOnClickHandler mOnClickHandler;
     private RecyclerView playlistDialogListRecyclerView;
     private PlaylistDialogListAdapter playlistDialogListAdapter;
-    public static Dialog dialog;
+    static Dialog dialog;
 
     public interface ListRecycleAdapterOnClickHandler {
         void onClick(int position);
     }
 
 
-    public ListRecycleAdapter(Context mContext, List<ListSong> songList, ListRecycleAdapter
-            .ListRecycleAdapterOnClickHandler
-            mOnClickHandler) {
+    public ListRecycleAdapter(Context mContext, List<ListSong> songList, ArrayList<Playlist>
+            allPlaylists, ListRecycleAdapter.ListRecycleAdapterOnClickHandler mOnClickHandler) {
         this.mContext = mContext;
         this.songList = songList;
+        this.allPlaylists = allPlaylists;
         this.mOnClickHandler = mOnClickHandler;
     }
 
@@ -76,13 +70,14 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, final int position) {
-        final ListSong song = songList.get(position);
+    public void onBindViewHolder(final MyViewHolder holder, int position) {
+        final int index = position;
+        final ListSong song = songList.get(index);
 //        final List<ListSong> playlist = songList.subList(position, songList.size());
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mOnClickHandler.onClick(position);
+                mOnClickHandler.onClick(index);
             }
         });
         holder.listArtist.setText(song.getArtist());
@@ -101,20 +96,7 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
 
         Uri uri = ContentUris.withAppendedId(sArtworkUri,
                 song.getAlbumId());
-//        if(isImageFile(uri.toString()))
-//        File file = new File(uri.getPath());
-//        if (file.exists()) {
-//            //Do something
-//            Log.i("path", "exists");
-//        String filePath = uri.toString();
-//        Cursor cursor = mContext.getContentResolver().query(uri, new String[]{
-//                android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
-//        if (cursor != null) {
-//            cursor.moveToFirst();
-//            filePath = cursor.getString(0);
-//            Log.d("Uri", filePath);
-//            cursor.close();
-//        }
+
         ImageLoader.getInstance().cancelDisplayTask(holder.listSideImage);
         holder.listSideImage.setImageResource(R.drawable.music_player_svg);
         DisplayImageOptions imageOptions = new DisplayImageOptions.Builder()
@@ -284,8 +266,9 @@ public class ListRecycleAdapter extends RecyclerView.Adapter<ListRecycleAdapter.
                 Toast.makeText(mContext, "failed", Toast.LENGTH_SHORT).show();
             }
             //updating the loaded allPlaylists and user view
-            allPlaylists.addPlaylist(newPlaylist);
-            PlaylistsFragment.adapter.notifyDataSetChanged();
+            allPlaylists.add(newPlaylist);
+            getBus().post(Constants.UPDATE_PLAYlIST_KEY);
+//            PlaylistsFragment.adapter.notifyDataSetChanged();
             return true;
         }
 

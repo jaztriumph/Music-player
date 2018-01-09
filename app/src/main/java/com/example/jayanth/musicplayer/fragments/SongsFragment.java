@@ -12,8 +12,9 @@ import android.view.ViewGroup;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
-import com.example.jayanth.musicplayer.communicator.SlidePanelCommunicator;
+import com.example.jayanth.musicplayer.communicator.FragmentCommunicator;
 import com.example.jayanth.musicplayer.models.ListSong;
+import com.example.jayanth.musicplayer.models.Playlist;
 import com.example.jayanth.musicplayer.utils.Constants;
 
 import java.util.ArrayList;
@@ -26,16 +27,19 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter
     private RecyclerView recyclerView;
     private ListRecycleAdapter recycleAdapter;
     private List<ListSong> songList;
-    private SlidePanelCommunicator comm;
+    private FragmentCommunicator comm;
+    private ArrayList<Playlist> allPlaylists;
 
     public SongsFragment() {
         // Required empty public constructor
     }
 
-    public static SongsFragment newInstance(ArrayList<ListSong> songs) {
+    public static SongsFragment newInstance(ArrayList<ListSong> songs, ArrayList<Playlist>
+            allPlaylists) {
         SongsFragment songsFragment = new SongsFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList(Constants.SONGS_LIST_KEY, songs);
+        bundle.putParcelableArrayList(Constants.PLAYLIST_KEY, allPlaylists);
         songsFragment.setArguments(bundle);
         return songsFragment;
     }
@@ -45,6 +49,7 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             songList = getArguments().getParcelableArrayList(Constants.SONGS_LIST_KEY);
+            allPlaylists = getArguments().getParcelableArrayList(Constants.PLAYLIST_KEY);
         }
     }
 
@@ -59,7 +64,7 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter
     public void onAttach(Context context) {
         super.onAttach(context);
         songList = new ArrayList<>();
-        comm = (SlidePanelCommunicator) context;
+        comm = (FragmentCommunicator) context;
     }
 
     @Override
@@ -68,7 +73,7 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter
         //noinspection ConstantConditions
         recyclerView = getView().findViewById(R.id.list_recycler_view);
 
-        recycleAdapter = new ListRecycleAdapter(getActivity(), songList, this);
+        recycleAdapter = new ListRecycleAdapter(getActivity(), songList, allPlaylists, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(recycleAdapter);
@@ -83,7 +88,7 @@ public class SongsFragment extends Fragment implements ListRecycleAdapter
 
     @Override
     public void onClick(int position) {
-        comm.onClick(position);
+        comm.onClickSongs(position);
 //        Log.i("song path", song.getPath());
 //        Toast.makeText(getContext(), song.getArt(), Toast.LENGTH_SHORT).show();
     }

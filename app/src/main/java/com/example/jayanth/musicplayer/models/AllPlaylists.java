@@ -1,24 +1,23 @@
 package com.example.jayanth.musicplayer.models;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by jayanth on 27/12/17.
  */
 
 public class AllPlaylists {
-    private List<Playlist> allPlaylists;
+    private ArrayList<Playlist> allPlaylists;
 
     public AllPlaylists() {
         allPlaylists = new ArrayList<>();
     }
 
-    public List<Playlist> getAllPlaylists() {
+    public ArrayList<Playlist> getAllPlaylists() {
         return allPlaylists;
     }
 
-    public void setAllPlaylists(List<Playlist> allPlaylists) {
+    public void setAllPlaylists(ArrayList<Playlist> allPlaylists) {
         this.allPlaylists = allPlaylists;
     }
 

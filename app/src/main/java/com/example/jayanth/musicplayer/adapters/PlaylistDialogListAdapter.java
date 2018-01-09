@@ -13,8 +13,13 @@ import android.widget.TextView;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.activities.MainActivity;
-import com.example.jayanth.musicplayer.models.AllPlaylists;
 import com.example.jayanth.musicplayer.models.ListSong;
+import com.example.jayanth.musicplayer.models.Playlist;
+import com.example.jayanth.musicplayer.utils.Constants;
+
+import java.util.ArrayList;
+
+import static com.example.jayanth.musicplayer.MusicPlayerApp.getBus;
 
 /**
  * Created by jayanth on 29/12/17.
@@ -25,9 +30,10 @@ public class PlaylistDialogListAdapter extends RecyclerView.Adapter<PlaylistDial
 
     private Context mContext;
     private ListSong song;
-    private AllPlaylists allPlaylists;
+    private ArrayList<Playlist> allPlaylists;
 
-    public PlaylistDialogListAdapter(Context context, AllPlaylists allPlaylists, ListSong song) {
+    public PlaylistDialogListAdapter(Context context, ArrayList<Playlist> allPlaylists, ListSong
+            song) {
         this.mContext = context;
         this.allPlaylists = allPlaylists;
         this.song = song;
@@ -44,13 +50,13 @@ public class PlaylistDialogListAdapter extends RecyclerView.Adapter<PlaylistDial
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         final int pos = holder.getAdapterPosition();
-        holder.playlistName.setText(allPlaylists.getAllPlaylists().get(position).getPlaylistName());
+        holder.playlistName.setText(allPlaylists.get(position).getPlaylistName());
 
         //on click adding song to playlist
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                long playlist_id = allPlaylists.getAllPlaylists().get(pos).getPlaylistId();
+                long playlist_id = allPlaylists.get(pos).getPlaylistId();
 
                 Uri newUri = MediaStore.Audio.Playlists.Members.getContentUri(
                         "external", playlist_id);
@@ -65,9 +71,10 @@ public class PlaylistDialogListAdapter extends RecyclerView.Adapter<PlaylistDial
                 resolver.insert(newUri, values);
 
                 //updating the loaded allPlaylists and user view
-                allPlaylists.getAllPlaylists().get(pos).addSong(song);
+                allPlaylists.get(pos).addSong(song);
                 ListRecycleAdapter.dialog.dismiss();
-                MainActivity.adapter.notifyDataSetChanged();
+                getBus().post(Constants.UPDATE_PLAYlIST_KEY);
+//                MainActivity.adapter.notifyDataSetChanged();
 
             }
         });
@@ -75,7 +82,7 @@ public class PlaylistDialogListAdapter extends RecyclerView.Adapter<PlaylistDial
 
     @Override
     public int getItemCount() {
-        return allPlaylists.getAllPlaylists().size();
+        return allPlaylists.size();
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {

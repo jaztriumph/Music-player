@@ -8,49 +8,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
-    sothree:umanoPanelHeight="55dp"
-    sothree:umanoShadowHeight="4dp">
+    sothree:umanoPanelHeight="60dp"
+    sothree:umanoShadowHeight="6dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <android.support.design.widget.AppBarLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    app:layout_scrollFlags="scroll"
-                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
-                <android.support.design.widget.TabLayout
-                    android:id="@+id/tabs"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:tabGravity="fill"
-                    app:tabMode="fixed" />
-            </android.support.design.widget.AppBarLayout>
-
-            <android.support.v4.view.ViewPager
-                android:id="@+id/viewpager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-        </android.support.design.widget.CoordinatorLayout>
-        <!--here comes your main layout -->
-
-    </LinearLayout>
+    <include layout="@layout/main_layout" />
 
 
     <LinearLayout
@@ -62,47 +23,8 @@
         android:focusable="false"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:orientation="horizontal">
+        <include layout="@layout/slide_panel_layout" />
 
-            <ImageView
-
-                android:id="@+id/slide_cover"
-                android:layout_width="70dp"
-                android:layout_height="55dp"
-
-                android:background="@color/colorPrimary"
-                android:src="@drawable/music_player_svg" />
-
-            <TextView
-                android:id="@+id/song_name"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:paddingLeft="10dp"
-                android:text="Artist"
-                android:textColor="@color/windowBackground"
-                android:textSize="14sp" />
-
-            <ImageButton
-                android:id="@+id/play_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="55dp"
-
-                android:background="?android:attr/selectableItemBackground"
-                android:elevation="0dp"
-                android:gravity="center_vertical|end"
-                android:maxHeight="20dp"
-                android:maxWidth="20dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-
-                android:src="@drawable/play_button_svg" />
-
-        </LinearLayout>
 
         <LinearLayout xmlns:app="http://schemas.android.com/tools"
             android:layout_width="match_parent"
@@ -119,7 +41,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     app:resize_mode="fixed_height"
-
                     sothree:show_timeout="0" />
             </FrameLayout>
         </LinearLayout>
