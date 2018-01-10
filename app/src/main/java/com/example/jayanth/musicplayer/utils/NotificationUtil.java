@@ -168,30 +168,12 @@ public class NotificationUtil {
 //            final int iconId = android.R.id.icon;
 //            Picasso.with(context).load(song.getCoverImage()).resize(150, 150).into
 //                    (contentView, iconId, NOTIFY_USER_ID, notification);
-//            notificationManager.notify(NOTIFY_USER_ID, notification);
+            notificationManager.notify(NOTIFY_USER_ID, notification);
 
 
         }
     }
 
-    private void setBitmapLargeIcon(String url) {
-        ImageLoader.getInstance().loadImage(url, new
-                SimpleImageLoadingListener() {
-
-                    @Override
-                    public void onLoadingComplete(String imageUri, View view, Bitmap
-                            loadedImage) {
-                        super.onLoadingComplete(imageUri, view, loadedImage);
-                        notificationBuilder.setLargeIcon(loadedImage);
-                        notification=notificationBuilder.build();
-                        notificationManager.notify(NOTIFY_USER_ID, notification);
-//                    bigNotificationView.setImageViewBitmap(R.id
-//                            .expand_cover_image, loadedImage);
-//                    notificationManager.notify(NOTIFY_USER_ID, notification);
-                    }
-                });
-
-    }
 
 
     //creates a pendingIntent

@@ -25,7 +25,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
                         view, 0, false);
 //                mBoundService.startForeground(recentPlayed.getRecentPlayed().get(0));
             }
-            if(mBoundService.initialised)
+            if (mBoundService.initialised)
                 mBoundService.updateMainActivityUi(view);
             // Tell the user about this for our demo.
 //            Toast.makeText(MainActivity.this,"started",
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         setContentView(R.layout.activity_main);
-        if(mBoundService==null) {
+        if (mBoundService == null) {
             NotificationManager notificationManager = (NotificationManager) this.getSystemService
                     (Context.NOTIFICATION_SERVICE);
             if (notificationManager != null) {
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             slidingUpPanelLayout = findViewById(R.id.sliding_layout);
             playerView = findViewById(R.id.player_background_view);
             playlistButton = findViewById(R.id.playlist_btn);
-            LinearLayout slideLayout=findViewById(R.id.slide_layout);
+            RelativeLayout slideLayout = findViewById(R.id.slide_layout);
 
             setSupportActionBar(toolbar);
             toolbar.setTitle("Music player");
@@ -157,14 +157,18 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             slideLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(slidingUpPanelLayout.getPanelState()==SlidingUpPanelLayout.PanelState.COLLAPSED)
-                    slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                    if (slidingUpPanelLayout.getPanelState() == SlidingUpPanelLayout.PanelState
+                            .COLLAPSED)
+                        slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState
+                                .EXPANDED);
                     else
-                        slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                        slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState
+                                .COLLAPSED);
 
                 }
             });
-            slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout
+                    .PanelSlideListener() {
 
                 @Override
                 public void onPanelSlide(View panel, float slideOffset) {
@@ -182,9 +186,9 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
                         //action when collapsed
 //                    if(mBoundService.playWhenReady)
 //                    {
-//                        mBoundService.setPauseButton();
+//                        mBoundService.onPlayClicked();
 //                    }else{
-//                        mBoundService.setPlayButton();
+//                        mBoundService.onPauseClicked();
 //                    }
                         playlistButton.setVisibility(View.INVISIBLE);
                         playPauseButton.setVisibility(View.VISIBLE);
@@ -194,7 +198,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
                         playlistButton.setVisibility(View.VISIBLE);
                         playPauseButton.setVisibility(View.INVISIBLE);
-//                    playPauseButton.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable
+//                    playPauseButton.setImageDrawable(ContextCompat.getDrawable(MainActivity
+// .this, R.drawable
 //                            .pause_button_svg));
                     }
 
@@ -223,7 +228,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[]
             grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (this.requestCode == requestCode) {
@@ -258,8 +264,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         } catch (Exception e) {
             Log.e("preferences", e.toString());
         }
-        if(recentPlayed==null)
-        {
+        if (recentPlayed == null) {
             recentPlayed = new RecentPlayed();
         }
     }
@@ -376,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     @Override
     protected void onStart() {
         super.onStart();
-        startService(new Intent(this,MusicActionService.class));
+        startService(new Intent(this, MusicActionService.class));
 
         doBindService();
     }
@@ -391,7 +396,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
 //        adapter.addFrag(new AllSongsFragment(), "stream Songs");
-        adapter.addFrag(SongsFragment.newInstance(totalSongList, allPlaylists.getAllPlaylists()), "Songs");
+        adapter.addFrag(SongsFragment.newInstance(totalSongList, allPlaylists.getAllPlaylists()),
+                "Songs");
         adapter.addFrag(PlaylistsFragment.newInstance(allPlaylists.getAllPlaylists()), "Playlist");
         adapter.addFrag(RecentFragment.newInstance(recentPlayed.getRecentPlayed(), allPlaylists
                         .getAllPlaylists()),
@@ -406,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 ////        playWhenReady = true;
 ////        if(player!=null)
 ////            player.setPlayWhenReady(true);
-////        setPauseButton();
+////        onPlayClicked();
 //////        toResume = song.getUrl();
 ////        initializePlayer(song.getUrl());
 ////        Toast.makeText(this, "new", Toast.LENGTH_SHORT).show();
@@ -559,7 +565,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 //
 //    public void onClickPlay(View view) {
 //        if (player != null)
-//            changeIcon();
+//            onPlayPauseClicked();
 //    }
 
     public void changeIcon() {

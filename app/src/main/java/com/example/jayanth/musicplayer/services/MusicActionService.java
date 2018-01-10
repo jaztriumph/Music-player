@@ -19,7 +19,6 @@ import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
 import com.example.jayanth.musicplayer.models.ListSong;
-import com.example.jayanth.musicplayer.models.Song;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -63,10 +62,10 @@ public class MusicActionService extends Service implements AudioManager
     public boolean playWhenReady = true;
     private View mView;
     private ImageButton imageButton;
+    private ImageView exoBackground;
     private TextView songName;
+    private TextView artistName;
     private ImageView slideCoverImage;
-    private Song currentSong;
-    private SimpleExoPlayer mExoPlayer;
     private PlaybackControlView controls;
     private ArrayList<ListSong> songList;
     public boolean initialised;
@@ -175,9 +174,9 @@ public class MusicActionService extends Service implements AudioManager
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 if (playWhenReady) {
-                    setPauseButton(songList.get(currentWindow));
+                    onPlayClicked(songList.get(currentWindow));
                 } else {
-                    setPlayButton(songList.get(currentWindow));
+                    onPauseClicked(songList.get(currentWindow));
                 }
 
             }
@@ -228,13 +227,7 @@ public class MusicActionService extends Service implements AudioManager
 //        startForeground(NOTIFY_USER_ID, notificationUtil.notification);
 
     }
-//
-//    public void startForeground(ListSong song) {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//            notificationUtil.notifyUser(this, song);
-//            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
-//        }
-//    }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -247,7 +240,7 @@ public class MusicActionService extends Service implements AudioManager
 //        }
         if (action != null && player != null) {
             if (action.equals(NotificationUtil.ACTION_PLAY_PAUSE))
-                changeIcon(songList.get(currentWindow));
+                onPlayPauseClicked(songList.get(currentWindow));
             if (action.equals(NotificationUtil.ACTION_PLAY_NEXT))
                 playNext();
             if (action.equals(NotificationUtil.ACTION_PLAY_PREVIOUS))
@@ -272,19 +265,21 @@ public class MusicActionService extends Service implements AudioManager
         currentWindow = position;
         mView = view;
         playWhenReady = state;
+        exoBackground = view.findViewById(R.id.art_exo);
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
+        artistName = view.findViewById(R.id.artist_name);
         slideCoverImage = view.findViewById(R.id.slide_cover);
         playerView = view.findViewById(R.id.player_background_view);
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (player != null)
-                    changeIcon(songList.get(currentWindow));
+                    onPlayPauseClicked(songList.get(currentWindow));
             }
         });
         if (playWhenReady)
-            setPauseButton(songList.get(currentWindow));
+            onPlayClicked(songList.get(currentWindow));
 
 
         playerView.setPlayer(player);
@@ -323,6 +318,7 @@ public class MusicActionService extends Service implements AudioManager
 
     private void updateUi(ListSong song) {
         songName.setText(song.getSongName());
+        artistName.setText(song.getArtist());
         final Context context = this;
         final Uri sArtworkUri = Uri
                 .parse("content://media/external/audio/albumart");
@@ -332,6 +328,11 @@ public class MusicActionService extends Service implements AudioManager
         DisplayImageOptions imageOptions = new DisplayImageOptions.Builder()
                 .showImageOnFail(R.drawable.music_player_svg).build();
         ImageLoader.getInstance().displayImage(songCover.toString(), slideCoverImage, imageOptions);
+
+        DisplayImageOptions imageOptionsExo = new DisplayImageOptions.Builder()
+                .showImageOnFail(R.drawable.music_background_living1).build();
+        ImageLoader.getInstance().displayImage(songCover.toString(), exoBackground,
+                imageOptionsExo);
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -347,6 +348,7 @@ public class MusicActionService extends Service implements AudioManager
     public void updateMainActivityUi(View view) {
         mView = view;
 //        playWhenReady = state;
+        exoBackground = view.findViewById(R.id.art_exo);
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
         slideCoverImage = view.findViewById(R.id.slide_cover);
@@ -355,14 +357,14 @@ public class MusicActionService extends Service implements AudioManager
             @Override
             public void onClick(View view) {
                 if (player != null)
-                    changeIcon(songList.get(currentWindow));
+                    onPlayPauseClicked(songList.get(currentWindow));
             }
         });
 
         if (playWhenReady)
-            setPauseButton(songList.get(currentWindow));
+            onPlayClicked(songList.get(currentWindow));
         else
-            setPlayButton(songList.get(currentWindow));
+            onPauseClicked(songList.get(currentWindow));
 
 
         playerView.setPlayer(player);
@@ -373,6 +375,7 @@ public class MusicActionService extends Service implements AudioManager
         playerView.setShowShuffleButton(true);
         ListSong song = songList.get(currentWindow);
         updateUi(song);
+
 
     }
 
@@ -392,14 +395,14 @@ public class MusicActionService extends Service implements AudioManager
     }
 
 
-    public void changeIcon(ListSong song) {
+    public void onPlayPauseClicked(ListSong song) {
         if (playWhenReady) {
             playWhenReady = false;
-            setPlayButton(song);
+            onPauseClicked(song);
             player.setPlayWhenReady(false);
         } else {
             playWhenReady = true;
-            setPauseButton(song);
+            onPlayClicked(song);
             player.setPlayWhenReady(true);
         }
 
@@ -416,7 +419,7 @@ public class MusicActionService extends Service implements AudioManager
     }
 
 
-    public void setPauseButton(ListSong song) {
+    public void onPlayClicked(ListSong song) {
         playWhenReady = true;
         imageButton.setImageResource(R.drawable
                 .pause_button_svg);
@@ -429,70 +432,24 @@ public class MusicActionService extends Service implements AudioManager
             notificationUtil.notifyUser(this, song, playWhenReady);
             startForeground(NOTIFY_USER_ID, notificationUtil.notification);
         }
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                notificationUtil.bigNotificationView.setImageViewResource(R.id
-//                        .big_play_pause_btn, R.drawable
-//                        .pause_button_notification_svg);
-//                notificationUtil.smallNotificationView.setImageViewResource(R.id
-//                        .small_play_pause_btn, R
-//                        .drawable
-//                        .pause_button_notification_svg);
-//                notificationUtil.notificationBuilder.setContent(notificationUtil
-//                        .smallNotificationView);
-////                notificationUtil.notification.bigContentView = notificationUtil
-/// .bigNotificationView;
-//                notificationUtil.notificationManager.notify(NOTIFY_USER_ID, notificationUtil
-//                        .notification);
-            }
-        } catch (Exception e) {
-            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
-        }
 
     }
 
-    public void setPlayButton(ListSong song) {
+    public void onPauseClicked(ListSong song) {
         playWhenReady = false;
         imageButton.setImageResource(R.drawable.play_button_svg);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             notificationUtil.notifyUser(this, song, playWhenReady);
-            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
+
+//            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
         }
 
-        stopForeground(false);
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                notificationUtil.bigNotificationView.setImageViewResource(R.id
-//                        .big_play_pause_btn, R.drawable
-//                        .play_button_notification_svg);
-//                notificationUtil.smallNotificationView.setImageViewResource(R.id
-//                        .small_play_pause_btn, R
-//                        .drawable
-//                        .play_button_notification_svg);
-//                notificationUtil.notificationBuilder.setContent(notificationUtil
-//                        .smallNotificationView);
-////                notificationUtil.notification.bigContentView = notificationUtil
-/// .bigNotificationView;
-//                notificationUtil.notificationManager.notify(NOTIFY_USER_ID, notificationUtil
-//                        .notification);
-            }
-        } catch (Exception e) {
-            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
-        }
+//        stopForeground(false);
     }
 
     private enum AudioFocus {
         GAIN, LOSS
     }
-
-//    @Override
-//    public void onDestroy() {
-//        // Tell the user we stopped.
-//        releasePlayer();
-//        stopSelf();
-////        Toast.makeText(this, "stopped", Toast.LENGTH_SHORT).show();
-//
-//    }
 
 
 }

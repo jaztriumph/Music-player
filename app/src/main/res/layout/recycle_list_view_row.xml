@@ -3,13 +3,12 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/windowBackground"
     android:clickable="true"
     android:focusable="true"
-    android:background="@color/windowBackground"
     android:foreground="?android:attr/selectableItemBackground">
 
-    <RelativeLayout
-        xmlns:tools="http://schemas.android.com/tools"
+    <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="3dp">
@@ -22,10 +21,10 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:clickable="true"
-            android:focusable="true"
             android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
             android:contentDescription="@string/action_add_favourite"
+            android:focusable="true"
             android:src="@drawable/ic_dots" />
 
         <ImageView
