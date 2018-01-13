@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -322,6 +323,12 @@ public class MusicActionService extends Service implements AudioManager
         if (playWhenReady)
             onPlayClicked(songList.get(currentWindow));
 
+        musicSeekBar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return true;
+            }
+        });
 
         playerView.setPlayer(player);
         player.setRepeatMode(Player.REPEAT_MODE_ALL);
