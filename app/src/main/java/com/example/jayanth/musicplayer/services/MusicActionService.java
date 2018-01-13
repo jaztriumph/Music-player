@@ -8,12 +8,14 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,8 +70,10 @@ public class MusicActionService extends Service implements AudioManager
     private ImageView slideCoverImage;
     private PlaybackControlView controls;
     private ArrayList<ListSong> songList;
+    private SeekBar musicSeekBar;
     public boolean initialised;
     private AudioFocus audioFocus;
+    private Handler handler;
     Gson gson;
 
 
@@ -173,12 +177,15 @@ public class MusicActionService extends Service implements AudioManager
 
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                updateProgressBar();
                 if (playWhenReady) {
                     onPlayClicked(songList.get(currentWindow));
                 } else {
                     onPauseClicked(songList.get(currentWindow));
                 }
 
+//                musicSeekBar.setMax((int) player.getDuration());
+//                musicSeekBar.setProgress((int) player.getContentPosition());
             }
 
             @Override
@@ -228,6 +235,39 @@ public class MusicActionService extends Service implements AudioManager
 
     }
 
+    private void updateProgressBar() {
+        handler = new Handler();
+        long duration = player == null ? 0 : player.getDuration();
+        long position = player == null ? 0 : player.getCurrentPosition();
+//        if (!dragging) {
+        musicSeekBar.setMax((int) duration);
+        musicSeekBar.setProgress((int) position);
+//            musicSeekBar.setProgress(progressBarValue(position));
+
+        // Remove scheduled updates.
+        handler.removeCallbacks(updateProgressAction);
+        // Schedule an update if necessary.
+        int playbackState = player == null ? Player.STATE_IDLE : player.getPlaybackState();
+        if (playbackState != Player.STATE_IDLE && playbackState != Player.STATE_ENDED) {
+            long delayMs;
+            if (player.getPlayWhenReady() && playbackState == Player.STATE_READY) {
+                delayMs = 1000 - (position % 1000);
+                if (delayMs < 200) {
+                    delayMs += 1000;
+                }
+            } else {
+                delayMs = 1000;
+            }
+            handler.postDelayed(updateProgressAction, delayMs);
+        }
+    }
+
+    private final Runnable updateProgressAction = new Runnable() {
+        @Override
+        public void run() {
+            updateProgressBar();
+        }
+    };
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -265,6 +305,7 @@ public class MusicActionService extends Service implements AudioManager
         currentWindow = position;
         mView = view;
         playWhenReady = state;
+        musicSeekBar = view.findViewById(R.id.music_seek);
         exoBackground = view.findViewById(R.id.art_exo);
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
@@ -349,6 +390,7 @@ public class MusicActionService extends Service implements AudioManager
         mView = view;
 //        playWhenReady = state;
         exoBackground = view.findViewById(R.id.art_exo);
+        musicSeekBar = view.findViewById(R.id.music_seek);
         imageButton = view.findViewById(R.id.play_btn);
         songName = view.findViewById(R.id.song_name);
         slideCoverImage = view.findViewById(R.id.slide_cover);
