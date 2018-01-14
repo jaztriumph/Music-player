@@ -1,5 +1,6 @@
 package com.example.jayanth.musicplayer.services;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Context;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.models.AllPlaylists;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -71,10 +73,13 @@ public class MusicActionService extends Service implements AudioManager
     private ImageView slideCoverImage;
     private PlaybackControlView controls;
     private ArrayList<ListSong> songList;
+    private AllPlaylists allPlaylists;
     private SeekBar musicSeekBar;
     public boolean initialised;
     private AudioFocus audioFocus;
     private Handler handler;
+    private ImageButton playlistBtn;
+    private boolean isPlaylistFragmentVisible = false;
     Gson gson;
 
 
@@ -299,10 +304,14 @@ public class MusicActionService extends Service implements AudioManager
     }
 
 
-    public void initializePlayer(final ArrayList<ListSong> songList, View view, int position,
+    @SuppressLint("ClickableViewAccessibility")
+    public void initializePlayer(final ArrayList<ListSong> songList,
+                                 View view, int
+                                         position,
                                  boolean state) {
         initialised = true;
         this.songList = songList;
+
         currentWindow = position;
         mView = view;
         playWhenReady = state;
@@ -313,6 +322,20 @@ public class MusicActionService extends Service implements AudioManager
         artistName = view.findViewById(R.id.artist_name);
         slideCoverImage = view.findViewById(R.id.slide_cover);
         playerView = view.findViewById(R.id.player_background_view);
+        playlistBtn = view.findViewById(R.id.playlist_btn);
+
+//        playlistBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!isPlaylistFragmentVisible) {
+//                    isPlaylistFragmentVisible = true;
+//                    playerView.setVisibility(View.INVISIBLE);
+//                } else {
+//                    isPlaylistFragmentVisible = false;
+//                    playerView.setVisibility(View.VISIBLE);
+//                }
+//            }
+//        });
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -323,6 +346,7 @@ public class MusicActionService extends Service implements AudioManager
         if (playWhenReady)
             onPlayClicked(songList.get(currentWindow));
 
+        //making seekbar not changeable
         musicSeekBar.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -492,8 +516,8 @@ public class MusicActionService extends Service implements AudioManager
 
 //            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
         }
-
-//        stopForeground(false);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+        stopForeground(true);
     }
 
     private enum AudioFocus {

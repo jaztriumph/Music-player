@@ -1,5 +1,6 @@
 package com.example.jayanth.musicplayer.activities;
 
+
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -16,10 +17,14 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
 import com.example.jayanth.musicplayer.adapters.ViewPagerAdapter;
 import com.example.jayanth.musicplayer.communicator.FragmentCommunicator;
 import com.example.jayanth.musicplayer.fragments.PlaylistsFragment;
@@ -91,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     private MusicActionService mBoundService;
     private boolean mIsBound;
     private SlidingUpPanelLayout slidingUpPanelLayout;
+    private SongsFragment playlistDisplayFragment;
+
     View view;
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -137,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             if (notificationManager != null) {
                 notificationManager.cancelAll();
             }
-
             view = this.findViewById(android.R.id.content).getRootView();
             toolbar = findViewById(R.id.toolbar);
             slideCoverImage = findViewById(R.id.slide_cover);
@@ -167,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
                 }
             });
+//            slidingUpPanelLayout.setDragView(R.id.playlist_fragment);
             slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout
                     .PanelSlideListener() {
 
@@ -230,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[]
-            grantResults) {
+                                                   grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (this.requestCode == requestCode) {
             for (int i = 0; i < permissions.length; i++) {
@@ -590,17 +598,37 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     @Override
     public void onClickSongs(int position) {
         mBoundService.initializePlayer(totalSongList, view, position, true);
+
+//        playlistDisplayFragment = SongsFragment.newInstance(totalSongList, allPlaylists
+//                .getAllPlaylists());
+//        addPlaylistFragment();
     }
 
     @Override
     public void onClickPlaylistSongs(int position, int index) {
         mBoundService.initializePlayer(allPlaylists.getAllPlaylists().get(index).getSongList(),
-                view,
-                position, true);
+                view, position, true);
+
+//        playlistDisplayFragment = SongsFragment.newInstance(allPlaylists.getAllPlaylists().get
+//                (index).getSongList(), allPlaylists.getAllPlaylists());
+//        addPlaylistFragment();
     }
 
     @Override
     public void onClickRecentSongs(int position) {
-        mBoundService.initializePlayer(recentPlayed.getRecentPlayed(), view, position, true);
+        mBoundService.initializePlayer(recentPlayed.getRecentPlayed(), view,
+                position, true);
+
+//        playlistDisplayFragment = SongsFragment.newInstance(recentPlayed.getRecentPlayed(),
+//                allPlaylists.getAllPlaylists());
+//        addPlaylistFragment();
+    }
+
+    private void addPlaylistFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.playlist_fragment, playlistDisplayFragment,
+                "playList_fragment");
+        fragmentTransaction.commit();
     }
 }
