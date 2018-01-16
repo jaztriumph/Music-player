@@ -1,6 +1,5 @@
 package com.example.jayanth.musicplayer.services;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Context;
@@ -12,16 +11,20 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jayanth.musicplayer.R;
+import com.example.jayanth.musicplayer.adapters.ListRecycleAdapter;
 import com.example.jayanth.musicplayer.models.AllPlaylists;
 import com.example.jayanth.musicplayer.models.ListSong;
 import com.example.jayanth.musicplayer.utils.NotificationUtil;
@@ -58,7 +61,7 @@ import static com.example.jayanth.musicplayer.utils.NotificationUtil.NOTIFY_USER
  */
 
 public class MusicActionService extends Service implements AudioManager
-        .OnAudioFocusChangeListener {
+        .OnAudioFocusChangeListener, ListRecycleAdapter.ListRecycleAdapterOnClickHandler {
 
     public SimpleExoPlayer player;
     private long playbackPosition;
@@ -79,7 +82,8 @@ public class MusicActionService extends Service implements AudioManager
     private AudioFocus audioFocus;
     private Handler handler;
     private ImageButton playlistBtn;
-    private boolean isPlaylistFragmentVisible = false;
+    public boolean isCurrentPlaylistVisible = false;
+
     Gson gson;
 
 
@@ -241,40 +245,6 @@ public class MusicActionService extends Service implements AudioManager
 
     }
 
-    private void updateProgressBar() {
-        handler = new Handler();
-        long duration = player == null ? 0 : player.getDuration();
-        long position = player == null ? 0 : player.getCurrentPosition();
-//        if (!dragging) {
-        musicSeekBar.setMax((int) duration);
-        musicSeekBar.setProgress((int) position);
-//            musicSeekBar.setProgress(progressBarValue(position));
-
-        // Remove scheduled updates.
-        handler.removeCallbacks(updateProgressAction);
-        // Schedule an update if necessary.
-        int playbackState = player == null ? Player.STATE_IDLE : player.getPlaybackState();
-        if (playbackState != Player.STATE_IDLE && playbackState != Player.STATE_ENDED) {
-            long delayMs;
-            if (player.getPlayWhenReady() && playbackState == Player.STATE_READY) {
-                delayMs = 1000 - (position % 1000);
-                if (delayMs < 200) {
-                    delayMs += 1000;
-                }
-            } else {
-                delayMs = 1000;
-            }
-            handler.postDelayed(updateProgressAction, delayMs);
-        }
-    }
-
-    private final Runnable updateProgressAction = new Runnable() {
-        @Override
-        public void run() {
-            updateProgressBar();
-        }
-    };
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = null;
@@ -304,14 +274,48 @@ public class MusicActionService extends Service implements AudioManager
     }
 
 
-    @SuppressLint("ClickableViewAccessibility")
+    private void updateProgressBar() {
+        handler = new Handler();
+        long duration = player == null ? 0 : player.getDuration();
+        long position = player == null ? 0 : player.getCurrentPosition();
+//        if (!dragging) {
+        musicSeekBar.setMax((int) duration);
+        musicSeekBar.setProgress((int) position);
+//            musicSeekBar.setProgress(progressBarValue(position));
+
+        // Remove scheduled updates.
+        handler.removeCallbacks(updateProgressAction);
+        // Schedule an update if necessary.
+        int playbackState = player == null ? Player.STATE_IDLE : player.getPlaybackState();
+        if (playbackState != Player.STATE_IDLE && playbackState != Player.STATE_ENDED) {
+            long delayMs;
+            if (player.getPlayWhenReady() && playbackState == Player.STATE_READY) {
+                delayMs = 1000 - (position % 1000);
+                if (delayMs < 200) {
+                    delayMs += 1000;
+                }
+            } else {
+                delayMs = 1000;
+            }
+            handler.postDelayed(updateProgressAction, delayMs);
+        }
+    }
+
+
+    private final Runnable updateProgressAction = new Runnable() {
+        @Override
+        public void run() {
+            updateProgressBar();
+        }
+    };
+
+
     public void initializePlayer(final ArrayList<ListSong> songList,
                                  View view, int
                                          position,
                                  boolean state) {
         initialised = true;
         this.songList = songList;
-
         currentWindow = position;
         mView = view;
         playWhenReady = state;
@@ -323,19 +327,22 @@ public class MusicActionService extends Service implements AudioManager
         slideCoverImage = view.findViewById(R.id.slide_cover);
         playerView = view.findViewById(R.id.player_background_view);
         playlistBtn = view.findViewById(R.id.playlist_btn);
+        final LinearLayout currentPlaylistParent = view.findViewById(R.id.current_playlist_parent);
 
-//        playlistBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (!isPlaylistFragmentVisible) {
-//                    isPlaylistFragmentVisible = true;
-//                    playerView.setVisibility(View.INVISIBLE);
-//                } else {
-//                    isPlaylistFragmentVisible = false;
-//                    playerView.setVisibility(View.VISIBLE);
-//                }
-//            }
-//        });
+        setCurrentPlaylist();
+
+        playlistBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isCurrentPlaylistVisible) {
+                    currentPlaylistParent.setVisibility(View.VISIBLE);
+                    isCurrentPlaylistVisible = true;
+                } else {
+                    currentPlaylistParent.setVisibility(View.INVISIBLE);
+                    isCurrentPlaylistVisible = false;
+                }
+            }
+        });
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -343,6 +350,8 @@ public class MusicActionService extends Service implements AudioManager
                     onPlayPauseClicked(songList.get(currentWindow));
             }
         });
+
+
         if (playWhenReady)
             onPlayClicked(songList.get(currentWindow));
 
@@ -385,6 +394,10 @@ public class MusicActionService extends Service implements AudioManager
 
         ListSong song = songList.get(position);
         updateUi(song);
+    }
+
+    public void setAllPlayList(AllPlaylists allPlayList) {
+        this.allPlaylists = allPlayList;
     }
 
 
@@ -439,6 +452,7 @@ public class MusicActionService extends Service implements AudioManager
         else
             onPauseClicked(songList.get(currentWindow));
 
+        setCurrentPlaylist();
 
         playerView.setPlayer(player);
         player.setPlayWhenReady(playWhenReady);
@@ -452,12 +466,35 @@ public class MusicActionService extends Service implements AudioManager
 
     }
 
+    private void setCurrentPlaylist() {
+        RecyclerView currentPlaylistRecyclerView = mView.findViewById(R.id
+                .current_playlist_recycler_view);
+        ListRecycleAdapter playlistAdapter = new ListRecycleAdapter(this, songList,
+                allPlaylists.getAllPlaylists(), this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        currentPlaylistRecyclerView.setAdapter(playlistAdapter);
+        currentPlaylistRecyclerView.setLayoutManager(layoutManager);
+    }
+
+
+    @Override
+    public void onClick(int position) {
+        currentWindow = position;
+        player.seekTo(position, 0);
+        ListSong song = songList.get(currentWindow);
+        updateUi(song);
+        player.setPlayWhenReady(true);
+        playWhenReady = true;
+    }
+
 
     private void playNext() {
         currentWindow = (currentWindow + 1) % songList.size();
         player.seekTo(currentWindow, 0);
         ListSong song = songList.get(currentWindow);
         updateUi(song);
+        player.setPlayWhenReady(true);
+        playWhenReady = true;
     }
 
     private void playPrevious() {
@@ -517,7 +554,7 @@ public class MusicActionService extends Service implements AudioManager
 //            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
         }
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
-        stopForeground(true);
+            stopForeground(true);
     }
 
     private enum AudioFocus {

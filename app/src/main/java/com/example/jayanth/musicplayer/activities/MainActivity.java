@@ -17,19 +17,18 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,6 +65,7 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.gson.Gson;
 import com.marcoscg.easypermissions.EasyPermissions;
+import com.sothree.slidinguppanel.ScrollableViewHelper;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
@@ -73,7 +73,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity implements FragmentCommunicator {
+public class MainActivity extends AppCompatActivity implements FragmentCommunicator,
+        ListRecycleAdapter.ListRecycleAdapterOnClickHandler {
 
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     private boolean mIsBound;
     private SlidingUpPanelLayout slidingUpPanelLayout;
     private SongsFragment playlistDisplayFragment;
+    RecyclerView recyclerView;
+    LinearLayout currentPlaylistParent;
 
     View view;
 
@@ -109,13 +112,19 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
             mBoundService = ((MusicActionService.LocalBinder) service).getService();
+
+            //Assign playlists first then initialize
+            if (mBoundService.initialised)
+                mBoundService.updateMainActivityUi(view);
+            else
+                mBoundService.setAllPlayList(allPlaylists);
+
             if (recentPlayed.getRecentPlayed().size() > 0 && !mBoundService.initialised) {
                 mBoundService.initializePlayer(recentPlayed.getRecentPlayed(),
                         view, 0, false);
 //                mBoundService.startForeground(recentPlayed.getRecentPlayed().get(0));
             }
-            if (mBoundService.initialised)
-                mBoundService.updateMainActivityUi(view);
+
             // Tell the user about this for our demo.
 //            Toast.makeText(MainActivity.this,"started",
 //                    Toast.LENGTH_SHORT).show();
@@ -156,11 +165,14 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             playerView = findViewById(R.id.player_background_view);
             playlistButton = findViewById(R.id.playlist_btn);
             RelativeLayout slideLayout = findViewById(R.id.slide_layout);
+            currentPlaylistParent = findViewById(R.id.current_playlist_parent);
 
             setSupportActionBar(toolbar);
             toolbar.setTitle("Music player");
             viewPager.setOffscreenPageLimit(2);
             tabLayout.setupWithViewPager(viewPager);
+
+
             slideLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -174,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
                 }
             });
-//            slidingUpPanelLayout.setDragView(R.id.playlist_fragment);
+
             slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout
                     .PanelSlideListener() {
 
@@ -214,6 +226,10 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
                 }
             });
 
+            recyclerView = findViewById(R.id.current_playlist_recycler_view);
+            slidingUpPanelLayout.setScrollableView(recyclerView);
+            slidingUpPanelLayout.setScrollableViewHelper(new NestedScrollableViewHelper());
+
             mPrefs = getSharedPreferences(Constants.SHARED_PREFERENCES_KEY, MODE_PRIVATE);
             gson = new Gson();
             recentPlayed = new RecentPlayed();
@@ -222,8 +238,37 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
 
             checkPerm();
+
+
         }
 
+    }
+
+
+    //custom Recycler scrollview helper
+    public class NestedScrollableViewHelper extends ScrollableViewHelper {
+        public int getScrollableViewScrollPosition(View scrollableView, boolean isSlidingUp) {
+            if (currentPlaylistParent.getVisibility() != View.VISIBLE) {
+                return 0;
+            }
+
+            if (scrollableView instanceof RecyclerView && ((RecyclerView) scrollableView).getChildCount() > 0) {
+                RecyclerView rv = ((RecyclerView) scrollableView);
+                RecyclerView.LayoutManager lm = rv.getLayoutManager();
+                if (rv.getAdapter() == null) return 0;
+                if (isSlidingUp) {
+                    View firstChild = rv.getChildAt(0);
+                    // Approximate the scroll position based on the top child and the first visible item
+                    return rv.getChildLayoutPosition(firstChild) * lm.getDecoratedMeasuredHeight(firstChild) - lm.getDecoratedTop(firstChild);
+                } else {
+                    View lastChild = rv.getChildAt(rv.getChildCount() - 1);
+                    // Approximate the scroll position based on the bottom child and the last visible item
+                    return (rv.getAdapter().getItemCount() - 1) * lm.getDecoratedMeasuredHeight(lastChild) + lm.getDecoratedBottom(lastChild) - rv.getBottom();
+                }
+            } else {
+                return 0;
+            }
+        }
     }
 
     private void checkPerm() {
@@ -246,8 +291,9 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
                 int grantResult = grantResults[i];
                 if (permission.equals(EasyPermissions.WRITE_EXTERNAL_STORAGE)) {
                     if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(MainActivity.this, "WRITE_EXTERNAL_STORAGE Granted", Toast
-                                .LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "WRITE_EXTERNAL_STORAGE Granted",
+                                Toast
+                                        .LENGTH_LONG).show();
                         loadPlayer();
                     }
                 }
@@ -300,7 +346,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
                 String thisArtist = musicCursor.getString(artistColumn);
                 String data = musicCursor.getString(pathColumn);
                 long id = musicCursor.getLong(idColumn);
-                totalSongList.add(new ListSong(thisSongName, thisArtist, data, thisAlbumId, id));
+                totalSongList.add(new ListSong(thisSongName, thisArtist, data, thisAlbumId,
+                        id));
             }
             while (musicCursor.moveToNext());
             musicCursor.close();
@@ -404,9 +451,11 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
 //        adapter.addFrag(new AllSongsFragment(), "stream Songs");
-        adapter.addFrag(SongsFragment.newInstance(totalSongList, allPlaylists.getAllPlaylists()),
+        adapter.addFrag(SongsFragment.newInstance(totalSongList, allPlaylists.getAllPlaylists
+                        ()),
                 "Songs");
-        adapter.addFrag(PlaylistsFragment.newInstance(allPlaylists.getAllPlaylists()), "Playlist");
+        adapter.addFrag(PlaylistsFragment.newInstance(allPlaylists.getAllPlaylists()),
+                "Playlist");
         adapter.addFrag(RecentFragment.newInstance(recentPlayed.getRecentPlayed(), allPlaylists
                         .getAllPlaylists()),
                 "Recent");
@@ -599,9 +648,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     public void onClickSongs(int position) {
         mBoundService.initializePlayer(totalSongList, view, position, true);
 
-//        playlistDisplayFragment = SongsFragment.newInstance(totalSongList, allPlaylists
-//                .getAllPlaylists());
-//        addPlaylistFragment();
     }
 
     @Override
@@ -609,9 +655,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         mBoundService.initializePlayer(allPlaylists.getAllPlaylists().get(index).getSongList(),
                 view, position, true);
 
-//        playlistDisplayFragment = SongsFragment.newInstance(allPlaylists.getAllPlaylists().get
-//                (index).getSongList(), allPlaylists.getAllPlaylists());
-//        addPlaylistFragment();
     }
 
     @Override
@@ -619,16 +662,11 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         mBoundService.initializePlayer(recentPlayed.getRecentPlayed(), view,
                 position, true);
 
-//        playlistDisplayFragment = SongsFragment.newInstance(recentPlayed.getRecentPlayed(),
-//                allPlaylists.getAllPlaylists());
-//        addPlaylistFragment();
     }
 
-    private void addPlaylistFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.playlist_fragment, playlistDisplayFragment,
-                "playList_fragment");
-        fragmentTransaction.commit();
+
+    @Override
+    public void onClick(int position) {
+
     }
 }

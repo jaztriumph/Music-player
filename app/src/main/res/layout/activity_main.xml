@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
+
     sothree:umanoPanelHeight="60dp"
     sothree:umanoShadowHeight="6dp">
 
@@ -18,35 +19,48 @@
         android:layout_height="match_parent"
         android:clickable="true"
 
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:focusable="true">
 
 
         <FrameLayout xmlns:app="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clickable="true">
-
-            <!--<android.support.v7.widget.RecyclerView-->
-                <!--android:id="@+id/playlist_recycler_view"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:background="@color/colorAccent"-->
-                <!--android:clipToPadding="false"-->
-                <!--android:scrollbars="vertical"-->
-                <!--android:visibility="invisible" />-->
-            <RelativeLayout
-                android:id="@+id/playlist_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+            android:id="@+id/dragView_frame_child"
+            android:clickable="true"
+            android:focusable="true">
 
             <com.google.android.exoplayer2.ui.SimpleExoPlayerView
                 android:id="@+id/player_background_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:resize_mode="fixed_height"
-                sothree:show_timeout="0" >
+                sothree:show_timeout="0">
 
             </com.google.android.exoplayer2.ui.SimpleExoPlayerView>
+
+            <LinearLayout
+                android:id="@+id/current_playlist_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp" />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/current_playlist_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorAccent"
+                    android:clipToPadding="false"
+                    android:scrollbars="vertical"
+                    android:visibility="visible"
+                    sothree:umanoScrollableView="@color/colorAccent1" />
+            </LinearLayout>
+
 
             <include layout="@layout/slide_panel_layout" />
 
