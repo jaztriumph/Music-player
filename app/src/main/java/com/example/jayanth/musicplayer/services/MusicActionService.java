@@ -256,9 +256,13 @@ public class MusicActionService extends Service implements AudioManager
 //        }
         if (action != null && player != null) {
             if (action.equals(NotificationUtil.ACTION_PLAY_PAUSE))
+            {
                 onPlayPauseClicked(songList.get(currentWindow));
-            if (action.equals(NotificationUtil.ACTION_PLAY_NEXT))
-                playNext();
+            }
+            if (action.equals(NotificationUtil.ACTION_PLAY_NEXT)){
+                    playNext();
+            }
+
             if (action.equals(NotificationUtil.ACTION_PLAY_PREVIOUS))
                 playPrevious();
 
@@ -553,8 +557,8 @@ public class MusicActionService extends Service implements AudioManager
 
 //            startForeground(NOTIFY_USER_ID, notificationUtil.notification);
         }
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
-            stopForeground(true);
+//        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+//            stopForeground(true);
     }
 
     private enum AudioFocus {

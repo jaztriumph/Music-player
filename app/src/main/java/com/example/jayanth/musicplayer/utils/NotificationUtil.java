@@ -123,6 +123,10 @@ public class NotificationUtil {
                 .setAutoCancel(false)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(isPlaying);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+        {
+            notificationBuilder.addAction(R.drawable.cancel_svg,"close",close(context));
+        }
 
 
         //setting priority high for android versions less than jellybean
